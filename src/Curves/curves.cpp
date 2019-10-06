@@ -1,19 +1,21 @@
-#include <iostream>
-#include <fstream>
-
 #include "DataHandling.hpp"
 
-using namespace std;
+#include <unistd.h>
+#include <stdio.h>
+#include <limits.h>
 
 int main(int argc, char * argv[]){
 	
-	fstream queries;
-	ofstream output;
+	string input_file, query_file, output_file;
 
-	if (file_handling(argc, argv, &queries, &output))
+	if (!file_handling(argc, argv, &input_file, &query_file, &output_file))
 	{
 		return errno;
 	}
+
+input_file = "./Datasets/trajectories_dataset";
+
+	vector <Curve*> dataset = struct_initialization(input_file);
 
 	return errno;
 }
