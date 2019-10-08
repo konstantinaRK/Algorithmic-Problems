@@ -11,9 +11,10 @@ using namespace std;
 class Curve
 {
 	private:
+		int curve_id;
 		vector <pair <double, double>> points;
 	public:
-		// Curve();
+		Curve(int id);
 		// ~Curve();
 		void add_point(double x, double y);
 	

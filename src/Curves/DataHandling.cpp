@@ -2,6 +2,10 @@
 
 using namespace std;
 
+Curve::Curve(int id){
+	this->curve_id = id;
+}
+
 void Curve::add_point(double x, double y){
 
 	this->points.push_back(make_pair(x, y));
@@ -33,37 +37,43 @@ vector <Curve*> struct_initialization(string file){
 	{
 		while ( getline (data, line) )
 		{
-			data_vector.push_back(new Curve());
+			int pos1, pos2;
+			string sub;
 
-			// Find coordinate x
-			int pos1 = line.find("("); 
-			int pos2 = line.find(","); 
-			string sub = line.substr(pos1 + 1, pos2 - pos1 - 1); 
- 
-cout << "String is: " << sub << endl;;
+			pos2 = line.find("\t");
+			sub = line.substr(0, pos2);
+			int id = stoi(sub);
 
-			// Move line
-			line = line.substr(pos2 + 2);
+			data_vector.push_back(new Curve(id));
 
-			// Find coordinate y
-			pos2 = line.find(")");
-  
-			sub = line.substr(0, pos2); 
-cout << "String is: " << sub << endl;
+			long double x,y;
+			while (!line.empty())
+			{
+				// Find coordinate x
+				pos1 = line.find("("); 
+				pos2 = line.find(","); 
+				sub = line.substr(pos1 + 1, pos2 - pos1 - 1); 
+				x = stod(sub);
 
-			// Move line
-			line = line.substr(pos2 + 1);
-cout << line << endl;
+				// Move line
+				line = line.substr(pos2 + 2);
 
-			// data_vector.at(i).add_point()
+				// Find coordinate y
+				pos2 = line.find(")");
+				sub = line.substr(0, pos2); 
+				y = stod(sub);
+
+				// Move line
+				line = line.substr(pos2 + 1);
+
+cout << x << "  " << y << endl;
+				// data_vector.at(i).add_point()
+			}
 
 			i++;
-			break;
 		}
 		data.close();
 	}
-
-	cout << data_vector.size() << endl;
 
 	return data_vector;
 
