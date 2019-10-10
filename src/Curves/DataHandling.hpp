@@ -17,6 +17,7 @@ class Curve
 		Curve(int id);
 		// ~Curve();
 		void add_point(double x, double y);
+		void clear(void);
 	
 };
 

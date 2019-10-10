@@ -11,6 +11,10 @@ void Curve::add_point(double x, double y){
 	this->points.push_back(make_pair(x, y));
 }
 
+void Curve::clear(void){
+
+	this->points.clear();
+}
 
 int file_handling(int argc, char * argv[], string * input, string * queries, string * output)
 {

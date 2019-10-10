@@ -17,7 +17,13 @@ input_file = "./Datasets/trajectories_dataset";
 
 	vector <Curve*> dataset = struct_initialization(input_file);
 
-cout << dataset.size() << endl;
+
+	for (int i = 0; i < dataset.size(); i++)
+	{
+		dataset.at(i)->clear();
+		delete dataset.at(i);
+	}
+	dataset.clear();
 
 	return errno;
 }
