@@ -17,5 +17,7 @@ input_file = "./Datasets/trajectories_dataset";
 
 	vector <Curve*> dataset = struct_initialization(input_file);
 
+cout << dataset.size() << endl;
+
 	return errno;
 }

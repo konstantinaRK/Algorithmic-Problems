@@ -32,7 +32,7 @@ vector <Curve*> struct_initialization(string file){
 	data.open(file);
 
 	string line;
-	int i;
+	int i = 0;
 	if (data.is_open())
 	{
 		while ( getline (data, line) )
@@ -46,7 +46,7 @@ vector <Curve*> struct_initialization(string file){
 
 			data_vector.push_back(new Curve(id));
 
-			long double x,y;
+			double x,y;
 			while (!line.empty())
 			{
 				// Find coordinate x
@@ -66,8 +66,7 @@ vector <Curve*> struct_initialization(string file){
 				// Move line
 				line = line.substr(pos2 + 1);
 
-cout << x << "  " << y << endl;
-				// data_vector.at(i).add_point()
+				data_vector.at(i)->add_point(x, y);
 			}
 
 			i++;
