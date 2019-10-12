@@ -28,6 +28,7 @@ int main(int argc, char* argv[]){
 	cout << "End of reading input" << endl;
 
 	// int w = average_distance(&pointset);
+cout << average_distance(&pointset) << endl;
 	int w = 10;
 
 	int m = 20;	// πρεπει να βαλω ενα νουμερο
@@ -63,7 +64,7 @@ cout << "g functions created " << endl;
 	{
 		for (int i = 0; i < L; ++i)
 		{
-			key = (*g[i])[pointset[j]];
+			key = (*(g[i]))[pointset[j]];
 			if ( hash_tables[i].find(key) == hash_tables[i].end() )
 			{
 				// Insert the key
@@ -113,8 +114,8 @@ cout << "filled hash tables" << endl;
 		    }
 
 		    auto duration_brute_force = duration_cast<microseconds>(stop - start); 
-			cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << true_nearest_neighbor->get_id() << ", " << true_nearest_neighbor->get_distance() << endl; 
-			cout << "time : " << duration_brute_force.count() << endl;
+			// cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << true_nearest_neighbor->get_id() << ", " << true_nearest_neighbor->get_distance() << endl; 
+			// cout << "time : " << duration_brute_force.count() << endl;
 
 			// LSH
 			start = high_resolution_clock::now();
@@ -130,8 +131,8 @@ cout << "filled hash tables" << endl;
 				return 1;
 		    }
 		    auto duration_lsh = duration_cast<microseconds>(stop - start); 
-		    cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << lsh_nearest_neighbor->get_id() << ", " << lsh_nearest_neighbor->get_distance() << endl; 
-			cout << "time : " << duration_lsh.count() << endl << endl;
+		    // cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << lsh_nearest_neighbor->get_id() << ", " << lsh_nearest_neighbor->get_distance() << endl; 
+			// cout << "time : " << duration_lsh.count() << endl << endl;
 		
 			// Store the result of a query
 			update_output(&output, queries[i]->get_id(), lsh_nearest_neighbor, true_nearest_neighbor, duration_lsh.count(), duration_brute_force.count());

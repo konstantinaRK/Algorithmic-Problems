@@ -230,35 +230,62 @@ bool write_output(string file_name, string output){
 
 NN* brute_force(Point* point, vector<Point*>* pointset){
 
-	// Initialize min
-	string min_id = (*pointset)[0]->get_id();
-	int min_distance = manhattan_dist(point, (*pointset)[0]);	
+	// // Initialize min
+	// string min_id = (*pointset)[0]->get_id();
+	// int min_distance = manhattan_dist(point, (*pointset)[0]);	
+
+	// int current_distance;
+	// for (int i = 1; i < (*pointset).size(); ++i)
+	// {
+	// 	// Calculate the distance
+	// 	current_distance = manhattan_dist(point, (*pointset)[i]);
+
+	// 	// Replace min if neccessary
+	// 	if ( current_distance < min_distance )
+	// 	{
+	// 		min_distance = current_distance;
+	// 		min_id = (*pointset)[i]->get_id();
+	// 	}
+	// }
+
+	string min_id = "";
+	int min_distance;
 
 	int current_distance;
-	for (int i = 1; i < (*pointset).size(); ++i)
+	for (int i = 0; i < (*pointset).size(); ++i)
 	{
-		// Calculate the distance
-		current_distance = manhattan_dist(point, (*pointset)[i]);
-
-		// Replace min if neccessary
-		if ( current_distance < min_distance )
+		if ( (point->get_id()).compare((*pointset)[i]->get_id()) != 0 )
 		{
-			min_distance = current_distance;
-			min_id = (*pointset)[i]->get_id();
+			// Calculate the distance
+			current_distance = manhattan_dist(point, (*pointset)[i]);
+
+			// Replace min if this is the first point or if current distance < min distance
+			if ( min_id.compare("") == 0 || current_distance < min_distance )
+			{
+				min_distance = current_distance;
+				min_id = (*pointset)[i]->get_id();
+			}
 		}
+
 	}
 
-	NN * nearest_neighbor;
-	try{
-		nearest_neighbor = new NN(min_id, min_distance);
-	}
-	catch(bad_alloc&)
+	// If i have found a nearest neighbor
+	if ( min_id.compare("") !=0 )
 	{
-		cerr << "No memory available" << endl;
-		nearest_neighbor = NULL;
-	}
+		NN * nearest_neighbor;
+		try{
+			nearest_neighbor = new NN(min_id, min_distance);
+		}
+		catch(bad_alloc&)
+		{
+			cerr << "No memory available" << endl;
+			nearest_neighbor = NULL;
+		}
 
-	return nearest_neighbor;
+		return nearest_neighbor;
+	}
+	else	// If there is no point except this point in the pointset
+		return NULL;
 }
 
 int manhattan_dist(Point* x, Point* y){
@@ -286,35 +313,24 @@ int average_distance(vector<Point*>* pointset){
 	int step = floor(sqrt(size));
 
 	int sum_d = 0;
-	Point* x = (*pointset)[0];
-	Point* y;
-	for (int i = step; i < size; i+=step)
+	for (int i = 0; i < size; i+=step)
 	{
-		y = (*pointset)[i];
-		sum_d += manhattan_dist(x, y);
-		x = y;
+		sum_d += brute_force((*pointset)[i], pointset)->get_distance();
 	}
 
 	return floor(sum_d/(size/step));
 
-	// int size = pointset.size();
+	// int size = (*pointset).size();
+	// int step = floor(sqrt(size));
 
 	// int sum_d = 0;
-	// int num = 0;
-	// for (int i = 0; i < size-1; ++i)
+	// for (int i = 0; i < size; i++)
 	// {
-	// 	Point* x = pointset[i];
-	// 	Point* y;
-	// 	for (int j = i+1; i < size; i++)
-	// 	{
-	// 		y = pointset[i];
-	// 		sum_d += manhattan_dist(*x, *y);
-	// 		num ++;
-	// 	}
+	// 	sum_d += brute_force((*pointset)[i], pointset)->get_distance();
 	// }
 
-	// cout << "sum " << sum_d << ", size-1 * size" << num << endl;
-	// return floor(sum_d/num);
+	// return floor(sum_d/size);
+
 }
 
 int modulo(int a, int b) {
