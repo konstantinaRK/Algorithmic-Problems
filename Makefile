@@ -9,17 +9,14 @@ cube.o: cube.cpp
 utilities.o: utilities.cpp
 	g++ -o utilities.o -c utilities.cpp
 
-point.o: point.cpp
-	g++ -o point.o -c point.cpp
-
 lsh_functions.o: lsh_functions.cpp
 	g++ -o lsh_functions.o -c lsh_functions.cpp
 
 lsh: lsh.o utilities.o point.o lsh_functions.o
-	g++ -o lsh lsh.o utilities.o point.o lsh_functions.o
+	g++ -o lsh lsh.o utilities.o lsh_functions.o
 
 cube: cube.o utilities.o point.o
-	g++ -o cube cube.o utilities.o point.o
+	g++ -o cube cube.o utilities.o
 
 clean:
-	-rm lsh cube lsh.o cube.o utilities.o point.o lsh_functions.o
+	-rm lsh cube lsh.o cube.o utilities.o lsh_functions.o

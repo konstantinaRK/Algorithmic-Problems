@@ -5,11 +5,19 @@
 #include <sstream>
 #include <unistd.h> 
 #include <cmath>
-
-#include "point.h"
-// #include <bits/stdc++.h> 
+#include <unordered_map>
 
 using namespace std;
+
+class Point{
+		string id;
+		vector<int> X;
+	public:
+		Point(string id, vector<int>* X);
+		inline string get_id(void) { return this->id; }
+		inline int get_dimension(void) { return this->X.size(); }
+		int operator[](int i);
+};
 
 class NN {
 		string id;
@@ -23,15 +31,22 @@ class NN {
 bool check_arguments_lsh(int argc, char* argv[], string* input_file, string* queries_file, int* k, int* L, string* output_file);
 bool check_arguments_cube(int argc, char* argv[], string* input_file, string* queries_file, int* k, int* M, int* probes, string* output_file);
 bool read(string file_name, vector<Point*>* points);
-bool proccess_point(vector<Point*>* points, string point, int d = -1);
-void delete_vector(vector<Point*> pointset);
-void print_points(vector<Point*> points);
+bool point_proccessing(vector<Point*>* points, string point, int d = -1);
 
-int manhattan_dist(Point x, Point y);
-NN* brute_force(Point point, vector<Point*> pointset);
+template <class C>
+void delete_vector(vector<C*>* v){
 
-int average_distance(vector<Point*> pointset);
+	for (int i = 0; i < (*v).size(); ++i)
+		delete (*v)[i];
 
+	(*v).clear();
+}
+
+int manhattan_dist(Point* x, Point* y);
+NN* brute_force(Point* point, vector<Point*>* pointset);
+
+int average_distance(vector<Point*>* pointset);
 int modulo(int a, int b);
 
+void print_points(vector<Point*> points);
 void print_hash_tables(vector<unordered_map<int, vector<Point*>>>* hash_tables);

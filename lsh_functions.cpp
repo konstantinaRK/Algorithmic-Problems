@@ -53,10 +53,12 @@ G::G(int k,int dimension, int m, int w){
 
 G::~G(){
 
-	for (int i = 0; i < h.size(); ++i)
+	for (int i = 0; i < this->h.size(); ++i)
 	{
-		delete h[i];
+		delete this->h[i];
 	}
+
+	this->h.clear();
 }
 
 int G::operator[](Point* point){
@@ -98,11 +100,11 @@ NN* lsh(Point* point,vector<G*>* g, vector<unordered_map<int, vector<Point*>>>* 
 				if ( min_id == "" )
 				{
 					min_id = p->get_id();
-					min_distance = manhattan_dist(*p, *point);
+					min_distance = manhattan_dist(p, point);
 				}
 				else
 				{
-					int distance = manhattan_dist(*p, *point);
+					int distance = manhattan_dist(p, point);
 					if ( distance < min_distance )
 					{
 						min_distance = distance;
@@ -112,5 +114,16 @@ NN* lsh(Point* point,vector<G*>* g, vector<unordered_map<int, vector<Point*>>>* 
 			}
 		}
 	}
-	return new NN(min_id, min_distance);
+	
+	NN * nearest_neighbor;
+	try{
+		nearest_neighbor = new NN(min_id, min_distance);
+	}
+	catch(bad_alloc&)
+	{
+		cerr << "No memory available" << endl;
+		nearest_neighbor = NULL;
+	}
+
+	return nearest_neighbor;
 }

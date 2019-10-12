@@ -19,7 +19,7 @@ int main(int argc, char* argv[]){
 	// Read the dataset file
 	vector<Point*> pointset;
 	if ( !read(dataset_file, &pointset) ){
-		delete_vector(pointset);
+		delete_vector<Point>(&pointset);
 		return 1;
 	}
 	
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]){
 
 		// Check for a new queries file
 		string answer;
-		cout << "Do you want to search the nearest neighbors in a new input file? y or n" << endl;
+		cout << "Do you want to search the nearest neighbors in a new query file? y or n" << endl;
 		cin >> answer;
 
 		if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
@@ -48,5 +48,5 @@ int main(int argc, char* argv[]){
 			cout << "Invalid answer try again" << endl;
 	}
 
-	delete_vector(pointset);
+	delete_vector<Point>(&pointset);
 }

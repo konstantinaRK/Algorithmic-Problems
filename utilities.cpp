@@ -4,6 +4,21 @@ using namespace std;
 
 // να κανω μια συναρτηση τα check arguments
 
+Point::Point(string id, vector<int>* X){
+
+	this->id = id;
+	for (int i=0; i<(*X).size(); i++){
+		this->X.push_back((*X)[i]);
+	}
+}
+
+int Point::operator[](int i){
+	 if ( i>=0 && i<this->X.size() )
+	 	return this->X[i];
+	 else
+	 	return -1; 
+}
+
 bool check_arguments_lsh(int argc, char* argv[], string * input_file, string * queries_file, int* k, int* L, string * output_file){
 
 	// Initialize parameters in case they are not given
@@ -126,7 +141,7 @@ bool read(string file_name, vector<Point*>* points){
   	{
   		//Read the first line and store d
   		getline(myfile, line);
-    	if ( !proccess_point(points, line) ){
+    	if ( !point_proccessing(points, line) ){
     		return false;
     	}
 
@@ -134,7 +149,7 @@ bool read(string file_name, vector<Point*>* points){
 
   		// Read rest lines
     	while ( getline(myfile, line) ){
-    	  if ( !proccess_point(points, line, d) ){
+    	  if ( !point_proccessing(points, line, d) ){
     	  	return false;
     	  }
     	}
@@ -148,7 +163,7 @@ bool read(string file_name, vector<Point*>* points){
   	return true;
 }
 
-bool proccess_point(vector<Point*>* points, string p, int d){
+bool point_proccessing(vector<Point*>* points, string p, int d){
 
 	stringstream L;
 	L << p;
@@ -172,70 +187,61 @@ bool proccess_point(vector<Point*>* points, string p, int d){
 	// Create a point
 	Point* point;
 	try{
-		point = new Point(id, X);
+		point = new Point(id, &X);
 	}
 	catch(std::bad_alloc&) {
 		cerr << "No memory available" << endl;
 		return false;   
 	}
+	X.clear();
+
 	// Insert point in the list
 	(*points).push_back(point);
 
 	return true;
 }
 
-void delete_vector(vector<Point*> pointset){
-
-	for (int i = 0; i < pointset.size(); ++i)
-		delete pointset[i];
-}
-
-void print_points(vector<Point*> points){
-
-	for (int i = 0; i < points.size(); ++i)
-	{
-		cout << points[i]->get_id() << "\t";
-		for (int j = 0; j < points[i]->get_dimension(); ++j)
-		{
-			cout << (*points[i])[j];
-			if ( j != points[i]->get_dimension()-1)
-				cout << "\t";
-		}
-		cout << endl;
-	}
-} 
-
-NN* brute_force(Point point, vector<Point*> pointset){
+NN* brute_force(Point* point, vector<Point*>* pointset){
 
 	// Initialize min
-	string min_id = pointset[0]->get_id();
-	int min_distance = manhattan_dist(point, *pointset[0]);	
+	string min_id = (*pointset)[0]->get_id();
+	int min_distance = manhattan_dist(point, (*pointset)[0]);	
 
 	int current_distance;
-	for (int i = 1; i < pointset.size(); ++i)
+	for (int i = 1; i < (*pointset).size(); ++i)
 	{
 		// Calculate the distance
-		current_distance = manhattan_dist(point, *pointset[i]);
+		current_distance = manhattan_dist(point, (*pointset)[i]);
 
 		// Replace min if neccessary
 		if ( current_distance < min_distance )
 		{
 			min_distance = current_distance;
-			min_id = pointset[i]->get_id();
+			min_id = (*pointset)[i]->get_id();
 		}
 	}
 
-	return new NN(min_id, min_distance);
+	NN * nearest_neighbor;
+	try{
+		nearest_neighbor = new NN(min_id, min_distance);
+	}
+	catch(bad_alloc&)
+	{
+		cerr << "No memory available" << endl;
+		nearest_neighbor = NULL;
+	}
+
+	return nearest_neighbor;
 }
 
-int manhattan_dist(Point x, Point y){
+int manhattan_dist(Point* x, Point* y){
 
 	int distance = 0;
 	int xi, yi, d;
-	for (int i = 0; i < x.get_dimension(); ++i)
+	for (int i = 0; i < x->get_dimension(); ++i)
 	{
-		xi = x[i];
-		yi = y[i];
+		xi = (*x)[i];
+		yi = (*y)[i];
 
 		d = xi - yi;
 		if ( d >= 0 )
@@ -247,18 +253,18 @@ int manhattan_dist(Point x, Point y){
 	return distance;
 }
 
-int average_distance(vector<Point*> pointset){
+int average_distance(vector<Point*>* pointset){
 
-	int size = pointset.size();
+	int size = (*pointset).size();
 	int step = floor(sqrt(size));
 
 	int sum_d = 0;
-	Point* x = pointset[0];
+	Point* x = (*pointset)[0];
 	Point* y;
 	for (int i = step; i < size; i+=step)
 	{
-		y = pointset[i];
-		sum_d += manhattan_dist(*x, *y);
+		y = (*pointset)[i];
+		sum_d += manhattan_dist(x, y);
 		x = y;
 	}
 
@@ -291,6 +297,21 @@ int modulo(int a, int b) {
   }
   return m;
 }
+
+void print_points(vector<Point*> points){
+
+	for (int i = 0; i < points.size(); ++i)
+	{
+		cout << points[i]->get_id() << "\t";
+		for (int j = 0; j < points[i]->get_dimension(); ++j)
+		{
+			cout << (*points[i])[j];
+			if ( j != points[i]->get_dimension()-1)
+				cout << "\t";
+		}
+		cout << endl;
+	}
+} 
 
 void print_hash_tables(vector<unordered_map<int, vector<Point*>>>* hash_tables){
 

@@ -4,6 +4,8 @@
 using namespace std;
 using namespace std::chrono;
 
+// οταν δημιουργω τα g πρεπει να αλλαξω λιγο τα exceptions
+
 int main(int argc, char* argv[]){
 
 	// Check validity of arguments
@@ -21,12 +23,12 @@ int main(int argc, char* argv[]){
 	// Read the dataset file
 	vector<Point*> pointset;
 	if ( !read(dataset_file, &pointset) ){
-		delete_vector(pointset);
+		delete_vector<Point>(&pointset);
 		return 1;
 	}
 	cout << "End of reading input" << endl;
 
-	// int w = average_distance(pointset);
+	// int w = average_distance(&pointset);
 	int w = 10;
 
 	int m = 20;	// πρεπει να βαλω ενα νουμερο
@@ -47,8 +49,8 @@ int main(int argc, char* argv[]){
 			g.push_back(new G(k, pointset[0]->get_dimension(), m, w));
 		}
 		catch(bad_alloc&){
-			// delete_vector(g);
-			delete_vector(pointset);
+			delete_vector<G>(&g);
+			delete_vector<Point>(&pointset);
 			cerr << "No memory available" << endl;
 			return 1;
 		}
@@ -76,7 +78,7 @@ cout << "g functions created " << endl;
 	}
 cout << "filled hash tables" << endl;
 // print_hash_tables(&hash_tables);
-
+		
 	bool stop = false;
 	while (!stop)
 	{
@@ -84,7 +86,7 @@ cout << "filled hash tables" << endl;
 		vector<Point*> queries;
 		if ( !read(queries_file, &queries) )
 		{
-			delete_vector(queries);
+			delete_vector<Point>(&queries);
 			return 1;
 		}
 		cout << "End of reading queries" << endl;
@@ -97,13 +99,14 @@ cout << "filled hash tables" << endl;
 
 			// Brute force
 			auto start = high_resolution_clock::now();
-			NN* nearest_neighbor = brute_force(*queries[i], pointset);
+			NN* nearest_neighbor = brute_force(queries[i], &pointset);
 		    auto stop = high_resolution_clock::now();
 
 		    if ( nearest_neighbor == NULL )
 		    {
-		    	delete_vector(queries);
-				delete_vector(pointset);
+		    	delete_vector<G>(&g);
+		    	delete_vector<Point>(&queries);
+				delete_vector<Point>(&pointset);
 				return 1;
 		    }
 
@@ -120,8 +123,9 @@ cout << "filled hash tables" << endl;
 
 		   	if ( nearest_neighbor == NULL )
 		    {
-		    	delete_vector(queries);
-				delete_vector(pointset);
+		    	delete_vector<G>(&g);
+		    	delete_vector<Point>(&queries);
+				delete_vector<Point>(&pointset);
 				return 1;
 		    }
 		    auto duration_lsh = duration_cast<microseconds>(stop - start); 
@@ -129,26 +133,34 @@ cout << "filled hash tables" << endl;
 			cout << "time : " << duration_lsh.count() << endl << endl;
 		
 		    delete nearest_neighbor;
-			// Print the result of a query	
+
+			// Store the result of a query
 		}
 
 		// Check for a new queries file
 		string answer;
-		cout << "Do you want to search the nearest neighbors in a new input file? y or n" << endl;
-		cin >> answer;
+		bool right_answer = false;
+		while ( !right_answer ){
+			cout << "Do you want to search the nearest neighbors in a new query file? y or n" << endl;
+			cin >> answer;
 
-		if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
-			cout << "Insert the name of the queries file" << endl;
-			cin >> queries_file;
+			if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
+				right_answer = true;
+				cout << "Insert the name of the queries file" << endl;
+				cin >> queries_file;
+			}
+			else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) ){
+				right_answer = true;
+				stop = true;
+			}
+			else{
+				right_answer = false;
+				cout << "Invalid answer try again" << endl;
+			}
 		}
-		else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) )
-			stop = true;
-		else
-			cout << "Invalid answer try again" << endl;
-
-		delete_vector(queries);
+		delete_vector<Point>(&queries);
 	}
 
-	// delete_vector(g);
-	delete_vector(pointset);
+	delete_vector<G>(&g);
+	delete_vector<Point>(&pointset);
 }

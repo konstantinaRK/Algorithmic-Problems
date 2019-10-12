@@ -9,10 +9,8 @@ class H{
 		int M;
 	public:
 		H(int dimension, int m, int w, int M);
+		inline ~H() { this->s.clear(); }
 		int operator[](Point* point);
-		// inline int get_m(void) { return this->m; }
-		// inline int get_w(void) { return this->w; }
-		// inline int get_M(void) { return this->M; }
 };
 
 class G{
