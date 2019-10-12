@@ -201,6 +201,33 @@ bool point_proccessing(vector<Point*>* points, string p, int d){
 	return true;
 }
 
+void update_output(string* output, string query_id, NN* lsh_nearest_neighbor, NN* true_nearest_neighbor, int duration_lsh, int duration_brute_force){
+
+	string query = "Query: "+query_id+"\nFound Nearest neighbor: "+lsh_nearest_neighbor->get_id()+"\nTrue Nearest neighbor: "+true_nearest_neighbor->get_id()
+					+"\ndistanceLSH: "+to_string(lsh_nearest_neighbor->get_distance())+"\ndistanceTrue: "+to_string(true_nearest_neighbor->get_distance())
+					+"\ntLSH: "+to_string(duration_lsh)+"\ntTrue: "+to_string(duration_brute_force)+"\n\n";
+	(*output) = (*output) + query;
+}
+
+bool write_output(string file_name, string output){
+
+	ofstream myfile;
+	myfile.open(file_name);
+
+	if (myfile.is_open())
+	{
+		myfile << output;
+		myfile.close();
+	}
+	else
+	{
+		cerr << "Unable to open file" << endl;
+		return false;
+	}
+
+	return true;
+}
+
 NN* brute_force(Point* point, vector<Point*>* pointset){
 
 	// Initialize min

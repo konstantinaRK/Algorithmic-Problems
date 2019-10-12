@@ -6,6 +6,7 @@
 #include <unistd.h> 
 #include <cmath>
 #include <unordered_map>
+#include <chrono> 
 
 using namespace std;
 
@@ -32,6 +33,8 @@ bool check_arguments_lsh(int argc, char* argv[], string* input_file, string* que
 bool check_arguments_cube(int argc, char* argv[], string* input_file, string* queries_file, int* k, int* M, int* probes, string* output_file);
 bool read(string file_name, vector<Point*>* points);
 bool point_proccessing(vector<Point*>* points, string point, int d = -1);
+void update_output(string* output,string query_id, NN* lsh_nearest_neighbor, NN* true_nearest_neighbor, int duration_lsh, int duration_brute_force);
+bool write_output(string file_name, string output);
 
 template <class C>
 void delete_vector(vector<C*>* v){

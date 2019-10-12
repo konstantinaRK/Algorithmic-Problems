@@ -1,5 +1,4 @@
 #include "lsh_functions.h"
-#include <chrono> 
 
 using namespace std;
 using namespace std::chrono;
@@ -82,6 +81,9 @@ cout << "filled hash tables" << endl;
 	bool stop = false;
 	while (!stop)
 	{
+
+		string output = "";
+
 		// Read the queries file
 		vector<Point*> queries;
 		if ( !read(queries_file, &queries) )
@@ -99,10 +101,10 @@ cout << "filled hash tables" << endl;
 
 			// Brute force
 			auto start = high_resolution_clock::now();
-			NN* nearest_neighbor = brute_force(queries[i], &pointset);
+			NN* true_nearest_neighbor = brute_force(queries[i], &pointset);
 		    auto stop = high_resolution_clock::now();
 
-		    if ( nearest_neighbor == NULL )
+		    if ( true_nearest_neighbor == NULL )
 		    {
 		    	delete_vector<G>(&g);
 		    	delete_vector<Point>(&queries);
@@ -111,30 +113,40 @@ cout << "filled hash tables" << endl;
 		    }
 
 		    auto duration_brute_force = duration_cast<microseconds>(stop - start); 
-			cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << nearest_neighbor->get_id() << ", " << nearest_neighbor->get_distance() << endl; 
+			cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << true_nearest_neighbor->get_id() << ", " << true_nearest_neighbor->get_distance() << endl; 
 			cout << "time : " << duration_brute_force.count() << endl;
-
-		    delete nearest_neighbor;
 
 			// LSH
 			start = high_resolution_clock::now();
-			nearest_neighbor = lsh(queries[i], &g, &hash_tables, w);
+			NN* lsh_nearest_neighbor = lsh(queries[i], &g, &hash_tables, w);
 		    stop = high_resolution_clock::now();
 
-		   	if ( nearest_neighbor == NULL )
+		   	if ( lsh_nearest_neighbor == NULL )
 		    {
+		    	delete true_nearest_neighbor;
 		    	delete_vector<G>(&g);
 		    	delete_vector<Point>(&queries);
 				delete_vector<Point>(&pointset);
 				return 1;
 		    }
 		    auto duration_lsh = duration_cast<microseconds>(stop - start); 
-		    cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << nearest_neighbor->get_id() << ", " << nearest_neighbor->get_distance() << endl; 
+		    cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << lsh_nearest_neighbor->get_id() << ", " << lsh_nearest_neighbor->get_distance() << endl; 
 			cout << "time : " << duration_lsh.count() << endl << endl;
 		
-		    delete nearest_neighbor;
-
 			// Store the result of a query
+			update_output(&output, queries[i]->get_id(), lsh_nearest_neighbor, true_nearest_neighbor, duration_lsh.count(), duration_brute_force.count());
+
+		    delete true_nearest_neighbor;
+		    delete lsh_nearest_neighbor;
+
+		}
+
+		// Store output in output_file
+		if (!write_output(output_file, output)){
+			delete_vector<Point>(&queries);
+			delete_vector<G>(&g);
+			delete_vector<Point>(&pointset);
+			return 1;
 		}
 
 		// Check for a new queries file
@@ -148,6 +160,9 @@ cout << "filled hash tables" << endl;
 				right_answer = true;
 				cout << "Insert the name of the queries file" << endl;
 				cin >> queries_file;
+
+				cout << "Insert the name of the output_file" << endl;
+				cin >> output_file;
 			}
 			else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) ){
 				right_answer = true;
