@@ -12,11 +12,14 @@ utilities.o: utilities.cpp
 lsh_functions.o: lsh_functions.cpp
 	g++ -o lsh_functions.o -c lsh_functions.cpp
 
-lsh: lsh.o utilities.o point.o lsh_functions.o
+hypercube.o: hypercube.cpp
+	g++ -o hypercube.o -c hypercube.cpp
+
+lsh: lsh.o utilities.o lsh_functions.o
 	g++ -o lsh lsh.o utilities.o lsh_functions.o
 
-cube: cube.o utilities.o point.o
-	g++ -o cube cube.o utilities.o
+cube: cube.o utilities.o hypercube.o lsh_functions.o
+	g++ -o cube cube.o utilities.o hypercube.o lsh_functions.o
 
 clean:
-	-rm lsh cube lsh.o cube.o utilities.o lsh_functions.o
+	-rm lsh cube lsh.o cube.o utilities.o lsh_functions.o hypercube.o
