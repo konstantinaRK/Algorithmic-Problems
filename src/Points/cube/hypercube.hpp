@@ -1,6 +1,6 @@
 #include <map>
 #include <unordered_map>
-#include "../lsh_functions.h"
+#include "../lsh_functions.hpp"
 
 using namespace std;
 

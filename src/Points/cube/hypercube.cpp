@@ -1,7 +1,7 @@
 #ifndef HYPERCUBE_HPP
 #define HYPERCUBE_HPP
 
-#include "hypercube.hpp"
+#include "./hypercube.hpp"
 
 F::F(int dim, int m , int w, int k)
 {

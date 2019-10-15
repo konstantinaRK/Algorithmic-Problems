@@ -1,5 +1,5 @@
-#include "../utilities.h"
-#include "hypercube.hpp"
+// #include "../utilities.h"
+#include "./hypercube.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -62,6 +62,10 @@ int main(int argc, char* argv[]){
 cout << "filled hash tables" << endl;
 
 // cout << hypercube.size() << endl;
+
+	double average_af = 0;
+	double max_af;
+	double time_af = 0;
 		
 	bool stop = false;
 	while (!stop)
@@ -102,7 +106,6 @@ cout << "End of reading queries" << endl;
 
 // 			// Hypercube
 			start = high_resolution_clock::now();
-// 			NN* lsh_nearest_neighbor = lsh(queries[i], &g, &hash_tables, w);
 			NN * hypercube_neighbor = hypercube_calc(queries[i], &(F_g), &hypercube, probes);
 			stop = high_resolution_clock::now();
 
@@ -114,16 +117,38 @@ cout << "End of reading queries" << endl;
 				return 1;
 			}
 
-			auto duration_lsh = duration_cast<microseconds>(stop - start); 
+			auto duration_hypercube = duration_cast<microseconds>(stop - start); 
 			cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << hypercube_neighbor->get_id() << ", " << hypercube_neighbor->get_distance() << endl; 
-			cout << "time : " << duration_lsh.count() << endl << endl;
+			cout << "time : " << duration_hypercube.count() << endl << endl;
 		
 			// Store the result of a query
-			update_output(&output, queries[i]->get_id(), hypercube_neighbor, true_nearest_neighbor, duration_lsh.count(), duration_brute_force.count());
+			update_output_cube(&output, queries[i]->get_id(), hypercube_neighbor, true_nearest_neighbor, duration_hypercube.count(), duration_brute_force.count());
+
+			double af = hypercube_neighbor->get_distance()/true_nearest_neighbor->get_distance();
+			double time = duration_hypercube.count()/duration_brute_force.count();
+			if ( average_af == 0 )
+			{
+				average_af = af;
+				max_af = af;
+				time_af = time;
+			}
+			else{
+				if (max_af < af)
+					max_af = af;
+				average_af += af;
+				time_af += time;
+			}
+
 
 			delete true_nearest_neighbor;
 			delete hypercube_neighbor;
 		}
+
+		average_af = average_af/queries.size();
+		time_af = time_af/queries.size();
+
+cout << "max_af is " << max_af << " and average af is " << average_af << " time comp. is : " << time_af << endl;
+
 
 		// Store output in output_file
 		if (!write_output(output_file, output)){

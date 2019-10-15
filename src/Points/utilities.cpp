@@ -1,10 +1,10 @@
-#include "./utilities.h"
+#include "./utilities.hpp"
 
 using namespace std;
 
 // να κανω μια συναρτηση τα check arguments
 
-Point::Point(string id, vector<int>* X){
+Point::Point(string id, vector<double>* X){
 
 	this->id = id;
 	for (int i=0; i<(*X).size(); i++){
@@ -12,7 +12,11 @@ Point::Point(string id, vector<int>* X){
 	}
 }
 
-int Point::operator[](int i){
+int Point::get_dimension(void){
+	return this->X.size();
+}
+
+double Point::operator[](int i){
 	 if ( i>=0 && i<this->X.size() )
 	 	return this->X[i];
 	 else
@@ -147,8 +151,7 @@ bool read(string file_name, vector<Point*>* points){
     	if ( !point_proccessing(points, line) ){
     		return false;
     	}
-
-    	d = (*points)[0]->get_dimension();
+    	d = ((*points)[0])->get_dimension();
 
   		// Read rest lines
     	while ( getline(myfile, line) ){
@@ -177,10 +180,10 @@ bool point_proccessing(vector<Point*>* points, string p, int d){
 
 	// Get the id and deside the type
 	string id = coordinate;
-	
-	vector<int> X;
+	vector<double> X;
 	while( getline(L, coordinate, ' ') ){
-		X.push_back( atoi(coordinate.c_str()) );
+		if ( coordinate.compare("\r") == 0 ) break;
+		X.push_back( stod(coordinate) );
 	}
 
 	if ( d != -1 && X.size() != d ){
@@ -204,11 +207,19 @@ bool point_proccessing(vector<Point*>* points, string p, int d){
 	return true;
 }
 
-void update_output(string* output, string query_id, NN* lsh_nearest_neighbor, NN* true_nearest_neighbor, int duration_lsh, int duration_brute_force){
+void update_output_lsh(string* output, string query_id, NN* lsh_nearest_neighbor, NN* true_nearest_neighbor, int duration_lsh, int duration_brute_force){
 
 	string query = "Query: "+query_id+"\nFound Nearest neighbor: "+lsh_nearest_neighbor->get_id()+"\nTrue Nearest neighbor: "+true_nearest_neighbor->get_id()
 					+"\ndistanceLSH: "+to_string(lsh_nearest_neighbor->get_distance())+"\ndistanceTrue: "+to_string(true_nearest_neighbor->get_distance())
 					+"\ntLSH: "+to_string(duration_lsh)+"\ntTrue: "+to_string(duration_brute_force)+"\n\n";
+	(*output) = (*output) + query;
+}
+
+void update_output_cube(string* output, string query_id, NN* hypercube_nearest_neighbor, NN* true_nearest_neighbor, int duration_hypercube, int duration_brute_force){
+
+	string query = "Query: "+query_id+"\nFound Nearest neighbor: "+hypercube_nearest_neighbor->get_id()+"\nTrue Nearest neighbor: "+true_nearest_neighbor->get_id()
+					+"\ndistanceHypercube: "+to_string(hypercube_nearest_neighbor->get_distance())+"\ndistanceTrue: "+to_string(true_nearest_neighbor->get_distance())
+					+"\ntHypercube: "+to_string(duration_hypercube)+"\ntTrue: "+to_string(duration_brute_force)+"\n\n";
 	(*output) = (*output) + query;
 }
 
@@ -344,6 +355,16 @@ int modulo(int a, int b) {
   return m;
 }
 
+int modPow(int b, int e, int m){
+
+	int r = 1;
+	for (int i = 0; i < e; ++i)
+	{
+		r = (r*b)%m;
+	}
+	return r;
+}
+
 void print_points(vector<Point*> points){
 
 	for (int i = 0; i < points.size(); ++i)
@@ -359,13 +380,17 @@ void print_points(vector<Point*> points){
 	}
 } 
 
-void print_hash_tables(vector<unordered_map<int, vector<Point*>>>* hash_tables){
+void print_hash_tables(vector<unordered_map<unsigned int, vector<Point*>>>* hash_tables){
 
+	int num_of_hash_tables;
    for (auto hash_table : ((*hash_tables)[0])) 
    {
-      	// cout << hash_table.first << endl; 
+      	// cout << hash_table.first << endl;
+      	num_of_hash_tables ++;
       	vector<Point*> points = hash_table.second;
       	// print_points(points);
-      	cout << endl << endl;
+      	// cout << endl << endl;
 	}
+
+	cout << "num_of_hash_tables " << num_of_hash_tables << endl;
 }
