@@ -10,7 +10,7 @@ F::F(int dim, int m , int w, int k)
 	{
 		try{
 			this->g.push_back(new G(k, dim, m, w));
-			this->f_g.push_back(map <int, int>());
+			this->f_g.push_back(map <unsigned int, int>());
 		}
 		catch(bad_alloc&){
 			delete_vector<G>(&(this->g));
@@ -35,8 +35,9 @@ F::~F()
 unsigned int F::calc_F(Point * point)
 {
 	// Production of 0 and 1 with equal probability
-	default_random_engine generator;
-	uniform_int_distribution<int> distribution(0,1);
+	random_device rd;  //Will be used to obtain a seed for the random number engine
+	mt19937 generator(rd()); //Standard mersenne_twister_engine seeded with rd()
+	uniform_int_distribution<> distribution(0, 1);
 
 	// f
 	unsigned int key = 0;
@@ -44,7 +45,7 @@ unsigned int F::calc_F(Point * point)
 	for (int i = 0; i < (this->g).size(); i++)
 	{
 		// fi calculation
-		int result = (*(this->g[i]))[point];
+		unsigned int result = (*(this->g[i]))[point];
 // cout << result << endl;
 		// If it's the first time we find the value
 		if ((this->f_g)[i].find(result) == (this->f_g)[i].end())
@@ -65,6 +66,7 @@ unsigned int F::calc_F(Point * point)
 		}
 	}
 // cout << key << endl;
+// getchar();
 	return key;
 }
 
@@ -119,6 +121,18 @@ NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* 
 
 	return nearest_neighbor;
 
+}
+
+void F::print(void){
+
+	for (int i = 0; i < this->f_g.size(); i++)
+	{
+		for (auto it = this->f_g[i].begin(); it != this->f_g[i].end(); ++it)
+		{ 
+			cout << it->first << " = " << it->second << '\n';
+		}
+		cout << "\n\n" << endl;
+	}
 }
 
 #endif

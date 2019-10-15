@@ -26,8 +26,7 @@ int main(int argc, char* argv[]){
 	}
 	cout << "End of reading input" << endl;
 
-	// int w = average_distance(&pointset);
-	int w = 4000;
+	int w = 4*average_distance(&pointset);
 	int m = 3;	// πρεπει να βαλω ενα νουμερο
 
 
@@ -60,7 +59,8 @@ int main(int argc, char* argv[]){
 	}
 
 cout << "filled hash tables" << endl;
-
+// F_g.print();
+// getchar();
 // cout << hypercube.size() << endl;
 
 	double average_af = 0;
@@ -124,8 +124,9 @@ cout << "End of reading queries" << endl;
 			// Store the result of a query
 			update_output_cube(&output, queries[i]->get_id(), hypercube_neighbor, true_nearest_neighbor, duration_hypercube.count(), duration_brute_force.count());
 
-			double af = hypercube_neighbor->get_distance()/true_nearest_neighbor->get_distance();
-			double time = duration_hypercube.count()/duration_brute_force.count();
+			double af = (double) hypercube_neighbor->get_distance()/true_nearest_neighbor->get_distance();
+			double time = (double) duration_hypercube.count()/duration_brute_force.count();
+
 			if ( average_af == 0 )
 			{
 				average_af = af;
