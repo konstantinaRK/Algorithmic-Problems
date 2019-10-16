@@ -41,36 +41,32 @@ unsigned int F::calc_F(Point * point)
 
 	// f
 	unsigned int key = 0;
-// cout << "allalala" << endl;
 	for (int i = 0; i < (this->g).size(); i++)
 	{
 		// fi calculation
 		unsigned int result = (*(this->g[i]))[point];
-// cout << result << endl;
+
 		// If it's the first time we find the value
 		if ((this->f_g)[i].find(result) == (this->f_g)[i].end())
 		{
 			int new_value = distribution(generator);
-// cout << "dist " << new_value << endl;
+
 			(this->f_g)[i].insert({result, new_value});
 			key = key << 1;
 			key = key | new_value;
-// cout << "key 1 " << key << endl;
 		}
 		// If it already has been calculated
 		else
 		{
 			key = key << 1;
 			key = key | (this->f_g)[i].find(result)->second;
-// cout << "key 2 " << key << endl;
 		}
 	}
-// cout << key << endl;
-// getchar();
+
 	return key;
 }
 
-NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, int probes)
+NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, int M, int probes)
 {
 	int min_distance;
 	string min_id = "";
@@ -81,7 +77,7 @@ NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* 
 		vector<Point*> buckets_points = hypercube->at(key);
 		Point* p;
 
-		for (int i = 0; i < buckets_points.size(); i++)
+		for (int i = 0; M > 0 && i < buckets_points.size(); M--, i++)
 		{				
 			p = buckets_points[i];
 			// If this is the first point
@@ -93,7 +89,6 @@ NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* 
 			else
 			{
 				int distance = manhattan_dist(p, point);
-// cout << "id = " << p->get_id() << " distance = " << distance << endl;
 				if ( distance < min_distance )
 				{
 					min_distance = distance;
@@ -123,16 +118,16 @@ NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* 
 
 }
 
-void F::print(void){
+// void F::print(void){
 
-	for (int i = 0; i < this->f_g.size(); i++)
-	{
-		for (auto it = this->f_g[i].begin(); it != this->f_g[i].end(); ++it)
-		{ 
-			cout << it->first << " = " << it->second << '\n';
-		}
-		cout << "\n\n" << endl;
-	}
-}
+// 	for (int i = 0; i < this->f_g.size(); i++)
+// 	{
+// 		for (auto it = this->f_g[i].begin(); it != this->f_g[i].end(); ++it)
+// 		{ 
+// 			cout << it->first << " = " << it->second << '\n';
+// 		}
+// 		cout << "\n\n" << endl;
+// 	}
+// }
 
 #endif

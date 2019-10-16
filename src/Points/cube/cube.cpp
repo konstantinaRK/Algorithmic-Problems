@@ -29,10 +29,6 @@ int main(int argc, char* argv[]){
 	int w = 4*average_distance(&pointset);
 	int m = 3;	// πρεπει να βαλω ενα νουμερο
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
 	// Create the hypercube
 	unordered_map<int, vector<Point*>> hypercube;
 
@@ -106,7 +102,7 @@ cout << "End of reading queries" << endl;
 
 // 			// Hypercube
 			start = high_resolution_clock::now();
-			NN * hypercube_neighbor = hypercube_calc(queries[i], &(F_g), &hypercube, probes);
+			NN * hypercube_neighbor = hypercube_calc(queries[i], &(F_g), &hypercube, M, probes);
 			stop = high_resolution_clock::now();
 
 			if ( hypercube_neighbor == NULL )
