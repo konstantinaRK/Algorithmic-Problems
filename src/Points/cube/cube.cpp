@@ -5,7 +5,6 @@ using namespace std::chrono;
 
 int main(int argc, char* argv[]){
 
-
 	// Check validity of arguments
 	unsigned int k, M, probes;
 	string dataset_file = "";

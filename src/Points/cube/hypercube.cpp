@@ -131,23 +131,24 @@ NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* 
 // }
 
 // Private functions
-unsigned int calc_depth(unsigned int k, unsigned int probes)
+unsigned int calc_distance(unsigned int k, unsigned int probes)
 {
 	unsigned int div = 1;
 	unsigned int mult = k;
+	unsigned int sum = k;	// Number of probes checked
 	double limit = (double)k;
-	unsigned int depth = 1;
-cout << "calc depth " << k << endl;
+	unsigned int distance = 1;	// Humming distance
+
 	// k!/(k-n)!n!
-	while (probes > limit && mult > 0){
+	while (probes > sum && mult > 0){
 		div ++;
 		mult --;
-		depth ++;
+		distance ++;
 		limit = (double) limit * mult / div;
-cout << "div " << div << " mult " << mult << " depth " << depth << " limit " << limit << endl;
+		sum += limit;
 	}
-cout << depth << endl;
-	return depth;
+
+	return distance;
 }
 
 #endif

@@ -16,6 +16,3 @@ class F {
 };
 
 NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int M, unsigned int probes);
-
-
-
