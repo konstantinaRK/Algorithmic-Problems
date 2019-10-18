@@ -3,7 +3,7 @@
 
 #include "./hypercube.hpp"
 
-F::F(int dim, int m , int w, int k)
+F::F(unsigned int dim, unsigned int m , unsigned int w, unsigned int k)
 {
 	// Create k (=d') g functions
 	for (int i = 0; i < k; ++i)
@@ -66,7 +66,7 @@ unsigned int F::calc_F(Point * point)
 	return key;
 }
 
-NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, int M, int probes)
+NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int M, unsigned int probes)
 {
 	int min_distance;
 	string min_id = "";
@@ -129,5 +129,25 @@ NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* 
 // 		cout << "\n\n" << endl;
 // 	}
 // }
+
+// Private functions
+unsigned int calc_depth(unsigned int k, unsigned int probes)
+{
+	unsigned int div = 1;
+	unsigned int mult = k;
+	double limit = (double)k;
+	unsigned int depth = 1;
+cout << "calc depth " << k << endl;
+	// k!/(k-n)!n!
+	while (probes > limit && mult > 0){
+		div ++;
+		mult --;
+		depth ++;
+		limit = (double) limit * mult / div;
+cout << "div " << div << " mult " << mult << " depth " << depth << " limit " << limit << endl;
+	}
+cout << depth << endl;
+	return depth;
+}
 
 #endif

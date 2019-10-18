@@ -1,4 +1,3 @@
-// #include "../utilities.h"
 #include "./hypercube.hpp"
 
 using namespace std;
@@ -6,8 +5,9 @@ using namespace std::chrono;
 
 int main(int argc, char* argv[]){
 
+
 	// Check validity of arguments
-	int k, M, probes;
+	unsigned int k, M, probes;
 	string dataset_file = "";
 	string queries_file = "";
 	string output_file = "";
@@ -25,6 +25,11 @@ int main(int argc, char* argv[]){
 		return 1;
 	}
 	cout << "End of reading input" << endl;
+
+	if (k == 0)
+	{
+		k = log2(pointset.size());
+	}
 
 	int w = 4*average_distance(&pointset);
 	int m = 3;	// πρεπει να βαλω ενα νουμερο
