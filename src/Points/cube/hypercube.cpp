@@ -3,6 +3,12 @@
 
 #include "./hypercube.hpp"
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned int calc_maxdistance(unsigned int k, unsigned int probes);
+NN * find_vertice_NN(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int *M, unsigned int key);
+void create_vector(vector <unsigned int > * neighbors, unsigned int k, unsigned int distance);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 F::F(unsigned int dim, unsigned int m , unsigned int w, unsigned int k)
 {
 	// Create k (=d') g functions
@@ -66,18 +72,115 @@ unsigned int F::calc_F(Point * point)
 	return key;
 }
 
+unsigned int F::getK(void){
+	return this->g.size();
+}
+
 NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int M, unsigned int probes)
 {
+
+	unsigned int max_distance = calc_maxdistance(f_g->getK(), probes);
+
+	NN *nearest_neighbor = NULL, *temp_neighbor = NULL;
+
+	unsigned int key = f_g->calc_F(point);
+	nearest_neighbor = find_vertice_NN(point, f_g, hypercube, &M, key);
+
+	vector <unsigned int> neighbors;
+	probes --;
+	if (M > 0 && probes > 0)
+	{
+		create_vector(&neighbors, f_g->getK(), max_distance);
+		int i = 0;
+		while(i < neighbors.size() && M > 0 && probes > 0)
+		{
+			unsigned int temp_key = key ^ neighbors.at(i);	
+
+			temp_neighbor = find_vertice_NN(point, f_g, hypercube, &M, temp_key);
+			if (nearest_neighbor == NULL)
+			{
+				nearest_neighbor = temp_neighbor;
+			}
+			else if ((temp_neighbor != NULL) && (nearest_neighbor->get_distance() > temp_neighbor->get_distance()))
+			{
+				delete nearest_neighbor;
+				nearest_neighbor = temp_neighbor;
+			}
+			else if(temp_neighbor != NULL)
+			{
+				delete temp_neighbor;
+			}
+			i++;
+			probes--;
+		}
+	}
+
+	return nearest_neighbor;
+}
+
+// void F::print(void){
+
+// 	for (int i = 0; i < this->f_g.size(); i++)
+// 	{
+// 		for (auto it = this->f_g[i].begin(); it != this->f_g[i].end(); ++it)
+// 		{ 
+// 			cout << it->first << " = " << it->second << '\n';
+// 		}
+// 		cout << "\n\n" << endl;
+// 	}
+// }
+
+// Private functions
+unsigned int calc_maxdistance(unsigned int k, unsigned int probes)
+{
+	unsigned int div = 1;
+	unsigned int mult = k;
+	unsigned int sum = k;	// Number of probes checked
+	double limit = (double)k;
+	unsigned int distance = 1;	// Humming distance
+
+	// k!/(k-n)!n!
+	while (probes > sum && mult > 0){
+		div ++;
+		mult --;
+		distance ++;
+		limit = (double) limit * mult / div;
+		sum += limit;
+	}
+
+	return distance;
+}
+
+void create_vector(vector <unsigned int > * neighbors, unsigned int k, unsigned int distance)
+{
+	unsigned int limit = 0x1 << k;
+	unsigned int start_mask = 1;
+	for (int i = 1; i <= distance; i++)
+	{
+		unsigned int mask = start_mask;
+
+		while (mask < limit)
+		{
+			neighbors->push_back(mask);
+			unsigned int t = (mask | (mask - 1)) + 1;
+			mask = t | ((((t & -t) / (mask & -mask)) >> 1) - 1);
+		}
+
+		start_mask = (start_mask << 1) | 1;
+	}
+}
+
+NN * find_vertice_NN(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int * M, unsigned int key){
+
 	int min_distance;
 	string min_id = "";
 
-	int key = f_g->calc_F(point);
 	if ( hypercube->find(key) != hypercube->end() )
 	{
 		vector<Point*> buckets_points = hypercube->at(key);
 		Point* p;
 
-		for (int i = 0; M > 0 && i < buckets_points.size(); M--, i++)
+		for (int i = 0; (*M) > 0 && i < buckets_points.size(); (*M)--, i++)
 		{				
 			p = buckets_points[i];
 			// If this is the first point
@@ -115,40 +218,6 @@ NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* 
 	}
 
 	return nearest_neighbor;
-
-}
-
-// void F::print(void){
-
-// 	for (int i = 0; i < this->f_g.size(); i++)
-// 	{
-// 		for (auto it = this->f_g[i].begin(); it != this->f_g[i].end(); ++it)
-// 		{ 
-// 			cout << it->first << " = " << it->second << '\n';
-// 		}
-// 		cout << "\n\n" << endl;
-// 	}
-// }
-
-// Private functions
-unsigned int calc_distance(unsigned int k, unsigned int probes)
-{
-	unsigned int div = 1;
-	unsigned int mult = k;
-	unsigned int sum = k;	// Number of probes checked
-	double limit = (double)k;
-	unsigned int distance = 1;	// Humming distance
-
-	// k!/(k-n)!n!
-	while (probes > sum && mult > 0){
-		div ++;
-		mult --;
-		distance ++;
-		limit = (double) limit * mult / div;
-		sum += limit;
-	}
-
-	return distance;
 }
 
 #endif

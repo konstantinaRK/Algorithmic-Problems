@@ -12,6 +12,7 @@ class F {
 		F(unsigned int dim, unsigned int m , unsigned int w, unsigned int k = 4);
 		~F();
 		unsigned int calc_F(Point * point);
+		unsigned int getK(void);
 // void print(void);
 };
 
