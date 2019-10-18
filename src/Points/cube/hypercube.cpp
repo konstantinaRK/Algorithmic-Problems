@@ -4,9 +4,7 @@
 #include "./hypercube.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-unsigned int calc_maxdistance(unsigned int k, unsigned int probes);
 NN * find_vertice_NN(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int *M, unsigned int key);
-void create_vector(vector <unsigned int > * neighbors, unsigned int k, unsigned int distance);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 F::F(unsigned int dim, unsigned int m , unsigned int w, unsigned int k)
@@ -76,25 +74,19 @@ unsigned int F::getK(void){
 	return this->g.size();
 }
 
-NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int M, unsigned int probes)
+NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int M, unsigned int probes, vector<unsigned int>* neighbors)
 {
-
-	unsigned int max_distance = calc_maxdistance(f_g->getK(), probes);
-
 	NN *nearest_neighbor = NULL, *temp_neighbor = NULL;
 
 	unsigned int key = f_g->calc_F(point);
 	nearest_neighbor = find_vertice_NN(point, f_g, hypercube, &M, key);
-
-	vector <unsigned int> neighbors;
 	probes --;
 	if (M > 0 && probes > 0)
 	{
-		create_vector(&neighbors, f_g->getK(), max_distance);
 		int i = 0;
-		while(i < neighbors.size() && M > 0 && probes > 0)
+		while(i < neighbors->size() && M > 0 && probes > 0)
 		{
-			unsigned int temp_key = key ^ neighbors.at(i);	
+			unsigned int temp_key = key ^ neighbors->at(i);	
 
 			temp_neighbor = find_vertice_NN(point, f_g, hypercube, &M, temp_key);
 			if (nearest_neighbor == NULL)

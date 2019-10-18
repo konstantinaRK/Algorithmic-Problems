@@ -63,6 +63,11 @@ cout << "filled hash tables" << endl;
 // getchar();
 // cout << hypercube.size() << endl;
 
+	unsigned int max_distance = calc_maxdistance(F_g.getK(), probes);
+	vector <unsigned int> neighbors;
+	create_vector(&neighbors, F_g.getK(), max_distance);
+
+
 	double average_af = 0;
 	double max_af;
 	double time_af = 0;
@@ -106,7 +111,7 @@ cout << "End of reading queries" << endl;
 
 // 			// Hypercube
 			start = high_resolution_clock::now();
-			NN * hypercube_neighbor = hypercube_calc(queries[i], &(F_g), &hypercube, M, probes);
+			NN * hypercube_neighbor = hypercube_calc(queries[i], &(F_g), &hypercube, M, probes, &neighbors);
 			stop = high_resolution_clock::now();
 
 			if ( hypercube_neighbor == NULL )
