@@ -79,10 +79,10 @@ bool check_arguments_lsh(int argc, char* argv[], string * input_file, string * q
 	return true;
 }
 
-bool check_arguments_cube(int argc, char* argv[], string * input_file, string * queries_file, int* k, int* M, int* probes, string * output_file){
+bool check_arguments_cube(int argc, char* argv[], string * input_file, string * queries_file, unsigned int * k, unsigned int * M, unsigned int * probes, string * output_file){
 
 	// Initialize parameters in case they are not given
-	(*k) = 3;
+	(*k) = 0;
 	(*M) = 10;
 	(*probes) = 2;
 
