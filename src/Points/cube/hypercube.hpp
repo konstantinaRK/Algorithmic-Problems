@@ -7,7 +7,7 @@ using namespace std;
 class F {
 	private:
 		vector<G *> g;
-		vector <map <unsigned int, int>> f_g;
+		vector <unordered_map <unsigned int, int>> f_g;
 	public:
 		F(unsigned int dim, unsigned int m , unsigned int w, unsigned int k = 4);
 		~F();

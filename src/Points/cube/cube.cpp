@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
 	unordered_map<int, vector<Point*>> hypercube;
 
 	// Create F function
-	F F_g(pointset[0]->get_dimension(), m, w, 4);
+	F F_g(pointset[0]->get_dimension(), m, w, k);
 
 
 	// Fill the hash table with the pointset

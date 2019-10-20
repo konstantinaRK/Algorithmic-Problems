@@ -13,8 +13,8 @@ F::F(unsigned int dim, unsigned int m , unsigned int w, unsigned int k)
 	for (int i = 0; i < k; ++i)
 	{
 		try{
-			this->g.push_back(new G(k, dim, m, w));
-			this->f_g.push_back(map <unsigned int, int>());
+			this->g.push_back(new G(4, dim, m, w));
+			this->f_g.push_back(unordered_map <unsigned int, int>());
 		}
 		catch(bad_alloc&){
 			delete_vector<G>(&(this->g));
