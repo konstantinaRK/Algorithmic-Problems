@@ -13,10 +13,10 @@ Traversal::~Traversal(){
 }
 
 IJ_Traversals::~IJ_Traversals(){
-	// for (int i = 0; i < this->traversals.size(); i++)
-	// {
-	// 	delete this->traversals.at(i);
-	// }
+	for (int i = 0; i < this->traversals.size(); i++)
+	{
+		delete this->traversals.at(i);
+	}
 	this->traversals.clear();	
 }
 
