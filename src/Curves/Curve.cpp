@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Curve::Curve(int id){
+Curve::Curve(string id){
 	this->curve_id = id;
 }
 
@@ -14,4 +14,9 @@ void Curve::add_point(double x, double y){
 void Curve::clear(void){
 
 	this->points.clear();
+}
+
+int Curve::get_size(void){
+
+	return this->points.size();
 }
