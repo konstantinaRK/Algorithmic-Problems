@@ -89,7 +89,7 @@ vector <Curve*> struct_initialization(string file){
 
 			pos2 = line.find("\t");
 			sub = line.substr(0, pos2);
-			int id = stoi(sub);
+			string id = sub;
 
 			data_vector.push_back(new Curve(id));
 

@@ -11,12 +11,18 @@ void Curve::add_point(double x, double y){
 	this->points.push_back(make_pair(x, y));
 }
 
+int Curve::get_length(void){
+
+	return this->points.size();
+}
+
+pair<double, double> Curve::operator[](int i){
+
+	return this->points[i];
+}
+
+
 void Curve::clear(void){
 
 	this->points.clear();
-}
-
-int Curve::get_size(void){
-
-	return this->points.size();
 }

@@ -1,9 +1,8 @@
-#include "../lsh_functions.hpp"
+#include "./lsh_functions.hpp"
+#include "../DataHandling.hpp"
 
 using namespace std;
 using namespace std::chrono;
-
-// οταν δημιουργω τα g πρεπει να αλλαξω λιγο τα exceptions
 
 int main(int argc, char* argv[]){
 
@@ -16,66 +15,24 @@ int main(int argc, char* argv[]){
 	if ( !check_arguments_lsh(argc, argv, &dataset_file, &queries_file, &k, &L, &output_file) )
 		return 1;
 
+	int r = 0;
 	// Read the dataset file
 	vector<Point*> pointset;
-	if ( !read(dataset_file, &pointset) ){
+	if ( !read(dataset_file, &pointset, &r) ){
 		delete_vector<Point>(&pointset);
 		return 1;
 	}
 	cout << "End of reading input" << endl;
 
-	// int w = average_distance(&pointset);
-// cout << average_distance(&pointset) << endl;
-	// int w = average_distance(&pointset);
-	int w = 2000;
+	int dimension = pointset[0]->get_dimension();
 
-	int m = 3;	// πρεπει να βαλω ενα νουμερο
-
-	// Create the hash tables
-	vector<unordered_map<unsigned int, vector<Point*>>> hash_tables;
-	for (int i = 0; i < L; ++i)
-	{
-		unordered_map<unsigned int, vector<Point*>> hash_table;
-		hash_tables.push_back(hash_table);
+	LSH* lsh;
+	try{
+		lsh = new LSH(&pointset, L, k, dimension);}
+	catch(bad_alloc&){
+		cerr << "main: No memory_available" << endl;
+		return 1;
 	}
-
-	// Create L g functions
-	vector<G*> g;
-	for (int i = 0; i < L; ++i)
-	{
-		try{
-			g.push_back(new G(k, pointset[0]->get_dimension(), m, w));
-		}
-		catch(bad_alloc&){
-			delete_vector<G>(&g);
-			delete_vector<Point>(&pointset);
-			cerr << "No memory available" << endl;
-			return 1;
-		}
-	}
-
-cout << "g functions created " << endl;
-
-	// Fill the hash table with the pointset
-	unsigned int key;
-	for (int j = 0; j < pointset.size(); ++j)
-	{
-		for (int i = 0; i < L; ++i)
-		{
-			key = (*(g[i]))[pointset[j]];
-			if ( hash_tables[i].find(key) == hash_tables[i].end() )
-			{
-				// Insert the key
-				vector<Point*> p;
-				p.push_back(pointset[j]);
-				hash_tables[i].insert(make_pair(key, p));
-			}
-			else
-				hash_tables[i].at(key).push_back(pointset[j]);
-		}		
-	}
-cout << "filled hash tables" << endl;
-print_hash_tables(&hash_tables);
 		
 	double average_af = 0;
 	double max_af;
@@ -84,7 +41,6 @@ print_hash_tables(&hash_tables);
 	bool stop = false;
 	while (!stop)
 	{
-
 		string output = "";
 
 		// Read the queries file
@@ -96,11 +52,10 @@ print_hash_tables(&hash_tables);
 		}
 		cout << "End of reading queries" << endl;
 
-		// print_points(queries);
-
 		// Check the queries
 		for (int i = 0; i < queries.size(); ++i)
 		{
+cout << queries[i]->get_id() << endl;
 			// Brute force
 			auto start = high_resolution_clock::now();
 			NN* true_nearest_neighbor = brute_force(queries[i], &pointset);
@@ -108,41 +63,35 @@ print_hash_tables(&hash_tables);
 
 		    if ( true_nearest_neighbor == NULL )
 		    {
-		    	delete_vector<G>(&g);
+				delete lsh;
 		    	delete_vector<Point>(&queries);
-				delete_vector<Point>(&pointset);
 				cerr << "no neighbor found" << endl;
 				return 1;
 		    }
 
 		    auto duration_brute_force = duration_cast<microseconds>(stop - start); 
-			// cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << true_nearest_neighbor->get_id() << ", " << true_nearest_neighbor->get_distance() << endl; 
-			// cout << "time : " << duration_brute_force.count() << endl;
+			cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << true_nearest_neighbor->get_id() << ", " << true_nearest_neighbor->get_distance() << endl; 
+			cout << "time : " << duration_brute_force.count() << endl;
 
 			// LSH
 			start = high_resolution_clock::now();
-			NN* lsh_nearest_neighbor = lsh(queries[i], &g, &hash_tables, w);
+			NN* lsh_nearest_neighbor = lsh->predict(queries[i], r);
 		    stop = high_resolution_clock::now();
 
 		   	if ( lsh_nearest_neighbor == NULL )
 		    {
 		    	delete true_nearest_neighbor;
-		  //   	delete_vector<G>(&g);
-		  //   	delete_vector<Point>(&queries);
-				// delete_vector<Point>(&pointset);
-				// cerr << "no neighbor found" << endl;
-				// return 1;
-				continue;
+		    	continue;
 		    }
 		    auto duration_lsh = duration_cast<microseconds>(stop - start); 
-		    // cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << lsh_nearest_neighbor->get_id() << ", " << lsh_nearest_neighbor->get_distance() << endl; 
-			// cout << "time : " << duration_lsh.count() << endl << endl;
+		    cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << lsh_nearest_neighbor->get_id() << ", " << lsh_nearest_neighbor->get_distance() << endl; 
+			cout << "time : " << duration_lsh.count() << endl << endl;
 		
 			// Store the result of a query
 			update_output_lsh(&output, queries[i]->get_id(), lsh_nearest_neighbor, true_nearest_neighbor, duration_lsh.count(), duration_brute_force.count());
 
-			double af = lsh_nearest_neighbor->get_distance()/true_nearest_neighbor->get_distance();
-			double time = duration_lsh.count()/duration_brute_force.count();
+			double af = (double)lsh_nearest_neighbor->get_distance()/true_nearest_neighbor->get_distance();
+			double time = (double)duration_lsh.count()/duration_brute_force.count();
 			if ( average_af == 0 )
 			{
 				average_af = af;
@@ -168,8 +117,7 @@ cout << "max_af is " << max_af << " and average af is " << average_af << " time 
 		// Store output in output_file
 		if (!write_output(output_file, output)){
 			delete_vector<Point>(&queries);
-			delete_vector<G>(&g);
-			delete_vector<Point>(&pointset);
+			delete lsh;
 			return 1;
 		}
 
@@ -200,6 +148,5 @@ cout << "max_af is " << max_af << " and average af is " << average_af << " time 
 		delete_vector<Point>(&queries);
 	}
 
-	delete_vector<G>(&g);
-	delete_vector<Point>(&pointset);
+	delete lsh;
 }

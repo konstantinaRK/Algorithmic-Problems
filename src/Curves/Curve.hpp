@@ -16,9 +16,11 @@ class Curve
 	public:
 		Curve(string id);
 		// ~Curve();
+		inline string get_id(void){ return this->curve_id; }
 		void add_point(double x, double y);
+		int get_length(void);
+		pair<double, double> operator[](int i);
 		void clear(void);
-		int get_size(void);
 	
 };
 

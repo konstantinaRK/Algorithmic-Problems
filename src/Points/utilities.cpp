@@ -2,8 +2,6 @@
 
 using namespace std;
 
-// να κανω μια συναρτηση τα check arguments
-
 Point::Point(string id, vector<double>* X){
 
 	this->id = id;
@@ -23,244 +21,29 @@ double Point::operator[](int i){
 	 	return -1; 
 }
 
-bool check_arguments_lsh(int argc, char* argv[], string * input_file, string * queries_file, int* k, int* L, string * output_file){
+NN::NN(string id, double distance, set<string>* neighbors){
 
-	// Initialize parameters in case they are not given
-	(*k) = 4;
-	(*L) = 5;
+	this->id = id;
+	this->distance = distance;
 
-	int opt;
-	bool neccessary_arg = false;
-	while ( (opt = getopt(argc, argv, "d:q:k:L:o:")) != -1 || opt == '?' )
-	{
-		switch (opt)
-		{
-			case 'd':
-				(*input_file) = optarg;
-				break;
-			case 'q':
-				(*queries_file) = optarg;
-				break;
-			case 'k':
-				(*k) = atoi(optarg);
-				break;
-			case 'L':
-				(*L) = atoi(optarg);
-				break;
-			case 'o':
-				neccessary_arg = true;
-				(*output_file) = optarg;
-				break;
-			default:
-				cerr << "Usage ./lsh -d <input_file> -q <query_file> -k <int> -L <int> -o <output_file>" << endl;
-				return false;
-		}
+	if ( neighbors != NULL ){
+		(this->r_near_neighbors).insert((this->r_near_neighbors).end(), (*neighbors).begin(), (*neighbors).end());
+		(*neighbors).clear();
 	}
-
-	if ( opt == '?' || neccessary_arg == false ){
-		cerr << "Usage ./lsh -d <input_file> -q <query_file> -k <int> -L <int> -o <output_file>" << endl;
-		return false;
-	}
-
-	// If input file was not in command line
-	if ( (*input_file).compare("") == 0 )
-	{
-		cout << "Please give the name of the input file" << endl;
-		cin >> (*input_file);
-	}
-
-	// If queries file is not given in command line
-	if ( (*queries_file).compare("") == 0 )
-	{
-		cout << "Please give the name of the queries file" << endl;
-		cin >> (*queries_file);
-	}
-
-	return true;
 }
 
-bool check_arguments_cube(int argc, char* argv[], string * input_file, string * queries_file, unsigned int * k, unsigned int * M, unsigned int * probes, string * output_file){
+string NN::get_near_neighbor(int i){
 
-	// Initialize parameters in case they are not given
-	(*k) = 0;
-	(*M) = 10;
-	(*probes) = 2;
-
-	int opt;
-	bool neccessary_arg = false;
-	while ( (opt = getopt(argc, argv, "d:q:k:M:p:o:")) != -1 || opt == '?' )
-	{
-		switch (opt)
-		{
-			case 'd':
-				(*input_file) = optarg;
-				break;
-			case 'q':
-				(*queries_file) = optarg;
-				break;
-			case 'k':
-				(*k) = atoi(optarg);
-				break;
-			case 'M':
-				(*M) = atoi(optarg);
-				break;
-			case 'p':
-				(*probes) = atoi(optarg);
-				break;
-			case 'o':
-				neccessary_arg = true;
-				(*output_file) = optarg;
-				break;
-			default:
-				return false;
-		}
-	}
-
-	if ( opt == '?' || neccessary_arg == false )
-		return false;
-
-	// If input file was not in command line
-	if ( (*input_file).compare("") == 0 )
-	{
-		cout << "Please give the name of the input file" << endl;
-		cin >> (*input_file);
-	}
-
-	// If queries file is not given in command line
-	if ( (*queries_file).compare("") == 0 )
-	{
-		cout << "Please give the name of the queries file" << endl;
-		cin >> (*queries_file);
-	}
-
-	return true;
+	if ( i<0 || i >= (this->r_near_neighbors).size())
+		return "";
+	return (this->r_near_neighbors)[i];
 }
 
-bool read(string file_name, vector<Point*>* points){
-
-	string line;
-	int d;
-
-  	ifstream myfile;
-  	myfile.open(file_name);
-
-  	if (myfile.is_open())
-  	{
-  		//Read the first line and store d
-  		getline(myfile, line);
-    	if ( !point_proccessing(points, line) ){
-    		return false;
-    	}
-    	d = ((*points)[0])->get_dimension();
-
-  		// Read rest lines
-    	while ( getline(myfile, line) ){
-    	  if ( !point_proccessing(points, line, d) ){
-    	  	return false;
-    	  }
-    	}
-    	myfile.close();
-  	}
-  	else
-  	{
-  		cerr << "Unable to open file" << endl;
-  		return false;
-  	}
-  	return true;
-}
-
-bool point_proccessing(vector<Point*>* points, string p, int d){
-
-	stringstream L;
-	L << p;
-	string coordinate;
-
-	if ( !getline(L, coordinate, ' ') )
-		return false;
-
-	// Get the id and deside the type
-	string id = coordinate;
-	vector<double> X;
-	while( getline(L, coordinate, ' ') ){
-		if ( coordinate.compare("\r") == 0 ) break;
-		X.push_back( stod(coordinate) );
-	}
-
-	if ( d != -1 && X.size() != d ){
-		cerr << "Wrong input file" << endl;
-		return false;
-	}
-	// Create a point
-	Point* point;
-	try{
-		point = new Point(id, &X);
-	}
-	catch(std::bad_alloc&) {
-		cerr << "No memory available" << endl;
-		return false;   
-	}
-	X.clear();
-
-	// Insert point in the list
-	(*points).push_back(point);
-
-	return true;
-}
-
-void update_output_lsh(string* output, string query_id, NN* lsh_nearest_neighbor, NN* true_nearest_neighbor, int duration_lsh, int duration_brute_force){
-
-	string query = "Query: "+query_id+"\nFound Nearest neighbor: "+lsh_nearest_neighbor->get_id()+"\nTrue Nearest neighbor: "+true_nearest_neighbor->get_id()
-					+"\ndistanceLSH: "+to_string(lsh_nearest_neighbor->get_distance())+"\ndistanceTrue: "+to_string(true_nearest_neighbor->get_distance())
-					+"\ntLSH: "+to_string(duration_lsh)+"\ntTrue: "+to_string(duration_brute_force)+"\n\n";
-	(*output) = (*output) + query;
-}
-
-void update_output_cube(string* output, string query_id, NN* hypercube_nearest_neighbor, NN* true_nearest_neighbor, int duration_hypercube, int duration_brute_force){
-
-	string query = "Query: "+query_id+"\nFound Nearest neighbor: "+hypercube_nearest_neighbor->get_id()+"\nTrue Nearest neighbor: "+true_nearest_neighbor->get_id()
-					+"\ndistanceHypercube: "+to_string(hypercube_nearest_neighbor->get_distance())+"\ndistanceTrue: "+to_string(true_nearest_neighbor->get_distance())
-					+"\ntHypercube: "+to_string(duration_hypercube)+"\ntTrue: "+to_string(duration_brute_force)+"\n\n";
-	(*output) = (*output) + query;
-}
-
-bool write_output(string file_name, string output){
-
-	ofstream myfile;
-	myfile.open(file_name);
-
-	if (myfile.is_open())
-	{
-		myfile << output;
-		myfile.close();
-	}
-	else
-	{
-		cerr << "Unable to open file" << endl;
-		return false;
-	}
-
-	return true;
+unsigned int NN::r_near_neighbors_size(){
+	return (this->r_near_neighbors).size();
 }
 
 NN* brute_force(Point* point, vector<Point*>* pointset){
-
-	// // Initialize min
-	// string min_id = (*pointset)[0]->get_id();
-	// int min_distance = manhattan_dist(point, (*pointset)[0]);	
-
-	// int current_distance;
-	// for (int i = 1; i < (*pointset).size(); ++i)
-	// {
-	// 	// Calculate the distance
-	// 	current_distance = manhattan_dist(point, (*pointset)[i]);
-
-	// 	// Replace min if neccessary
-	// 	if ( current_distance < min_distance )
-	// 	{
-	// 		min_distance = current_distance;
-	// 		min_id = (*pointset)[i]->get_id();
-	// 	}
-	// }
 
 	string min_id = "";
 	int min_distance;
@@ -302,10 +85,11 @@ NN* brute_force(Point* point, vector<Point*>* pointset){
 		return NULL;
 }
 
-int manhattan_dist(Point* x, Point* y){
+double manhattan_dist(Point* x, Point* y){
 
-	int distance = 0;
-	int xi, yi, d;
+	double distance = 0;
+	int xi, yi;
+	double d;
 	for (int i = 0; i < x->get_dimension(); ++i)
 	{
 		xi = (*x)[i];
@@ -321,48 +105,22 @@ int manhattan_dist(Point* x, Point* y){
 	return distance;
 }
 
-int average_distance(vector<Point*>* pointset){
+double average_distance(vector<Point*>* pointset){
+
 
 	int size = (*pointset).size();
 	int step = floor(sqrt(size));
 
 	int sum_d = 0;
+	NN * nearest_neighbor;
 	for (int i = 0; i < size; i+=step)
 	{
-		sum_d += brute_force((*pointset)[i], pointset)->get_distance();
+		nearest_neighbor = brute_force((*pointset)[i], &(*pointset));
+		sum_d += nearest_neighbor->get_distance();
+		delete nearest_neighbor;
 	}
 
-	return floor(sum_d/(size/step));
-
-	// int size = (*pointset).size();
-	// int step = floor(sqrt(size));
-
-	// int sum_d = 0;
-	// for (int i = 0; i < size; i++)
-	// {
-	// 	sum_d += brute_force((*pointset)[i], pointset)->get_distance();
-	// }
-
-	// return floor(sum_d/size);
-
-}
-
-int modulo(int a, int b) {
-  int m = a % b;
-  if (m < 0) {
-    m = (b < 0) ? m - b : m + b;
-  }
-  return m;
-}
-
-int modPow(int b, int e, int m){
-
-	int r = 1;
-	for (int i = 0; i < e; ++i)
-	{
-		r = (r*b)%m;
-	}
-	return r;
+	return sum_d/(size/step);
 }
 
 void print_points(vector<Point*> points){

@@ -2,16 +2,13 @@
 
 using namespace std;
 
-vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, unsigned int * K, unsigned int * L, double * e, unsigned int *M)
+vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, int * K, int * L, double * e)
 {
 	string input = "";
 	*queries = "";
 	*output = "";
 
 	*e = 0.5;
-	*K = 3;
-	*L = 5;
-	*M = 0;
 
 	if (argc % 2 != 1)
 	{
@@ -59,7 +56,6 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 	}
 
 	vector <Curve*> dataset = struct_initialization(input);
-	*M = dataset.size();
 
 	if ((*output).empty())
 	{
@@ -82,14 +78,14 @@ vector <Curve*> struct_initialization(string file){
 	int i = 0;
 	if (data.is_open())
 	{
-		while ( getline (data, line) && line.length() > 0 )
+		while ( getline (data, line) )
 		{
 			int pos1, pos2;
 			string sub;
 
 			pos2 = line.find("\t");
 			sub = line.substr(0, pos2);
-			int id = stoi(sub);
+			string id = sub;
 
 			data_vector.push_back(new Curve(id));
 

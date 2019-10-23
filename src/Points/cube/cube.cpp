@@ -1,4 +1,5 @@
-#include "./hypercube.hpp"
+#include "./hypercube_functions.hpp"
+#include "../DataHandling.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -30,43 +31,14 @@ int main(int argc, char* argv[]){
 		k = log2(pointset.size());
 	}
 
-	int w = 4*average_distance(&pointset);
-	int m = 3;	// πρεπει να βαλω ενα νουμερο
-
-	// Create the hypercube
-	unordered_map<int, vector<Point*>> hypercube;
-
-	// Create F function
-	F F_g(pointset[0]->get_dimension(), m, w, k);
-
-
-	// Fill the hash table with the pointset
-	int key;
-	for (int j = 0; j < pointset.size(); j++)
-	{
-			key = F_g.calc_F(pointset[j]);
-			if ( hypercube.find(key) == hypercube.end() )
-			{
-				// Insert the key
-				vector<Point*> p;
-				p.push_back(pointset[j]);
-				hypercube.insert(make_pair(key, p));
-			}
-			else
-			{
-				hypercube.at(key).push_back(pointset[j]);
-			}
+	Hypercube* hypercube;
+	try{
+		hypercube = new Hypercube(&pointset, pointset[0]->get_dimension(), k, M, probes);
 	}
-
-cout << "filled hash tables" << endl;
-// F_g.print();
-// getchar();
-// cout << hypercube.size() << endl;
-
-	unsigned int max_distance = calc_maxdistance(F_g.getK(), probes);
-	vector <unsigned int> neighbors;
-	create_vector(&neighbors, F_g.getK(), max_distance);
-
+	catch(bad_alloc&){
+		delete_vector<Point>(&pointset);
+		return 1;
+	}
 
 	double average_af = 0;
 	double max_af;
@@ -111,7 +83,7 @@ cout << "End of reading queries" << endl;
 
 // 			// Hypercube
 			start = high_resolution_clock::now();
-			NN * hypercube_neighbor = hypercube_calc(queries[i], &(F_g), &hypercube, M, probes, &neighbors);
+			NN * hypercube_neighbor = hypercube->predict(queries[i]);
 			stop = high_resolution_clock::now();
 
 			if ( hypercube_neighbor == NULL )

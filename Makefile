@@ -1,10 +1,10 @@
 all: lsh cube curve_grid_lsh curve_grid_hypercube curve_projection_lsh curve_projection_hypercube
 
-lsh: ./build/lsh.o ./build/utilities.o ./build/lsh_functions.o
-	g++ -o ./lsh ./build/lsh.o ./build/utilities.o ./build/lsh_functions.o
+lsh: ./build/lsh.o ./build/utilities.o ./build/lsh_functions.o ./build/PointsDataHandling.o
+	g++ -o ./lsh ./build/lsh.o ./build/utilities.o ./build/lsh_functions.o ./build/PointsDataHandling.o
 
-cube: ./build/cube.o ./build/utilities.o ./build/hypercube.o ./build/lsh_functions.o
-	g++ -o ./cube ./build/cube.o ./build/utilities.o ./build/hypercube.o ./build/lsh_functions.o
+cube: ./build/cube.o ./build/utilities.o ./build/hypercube_functions.o ./build/lsh_functions.o ./build/PointsDataHandling.o
+	g++ -o ./cube ./build/cube.o ./build/utilities.o ./build/hypercube_functions.o ./build/lsh_functions.o ./build/PointsDataHandling.o
 
 ./build/lsh.o: ./src/Points/lsh/lsh.cpp
 	g++ -o ./build/lsh.o -c ./src/Points/lsh/lsh.cpp
@@ -12,20 +12,23 @@ cube: ./build/cube.o ./build/utilities.o ./build/hypercube.o ./build/lsh_functio
 ./build/cube.o: ./src/Points/cube/cube.cpp
 	g++ -o ./build/cube.o -c ./src/Points/cube/cube.cpp
 
-./build/hypercube.o: ./src/Points/cube/hypercube.cpp
-	g++ -o ./build/hypercube.o -c ./src/Points/cube/hypercube.cpp
+./build/hypercube_functions.o: ./src/Points/cube/hypercube_functions.cpp
+	g++ -o ./build/hypercube_functions.o -c ./src/Points/cube/hypercube_functions.cpp
 
 ./build/utilities.o: ./src/Points/utilities.cpp
 	g++ -o ./build/utilities.o -c ./src/Points/utilities.cpp
 
-./build/lsh_functions.o: ./src/Points/lsh_functions.cpp
-	g++ -o ./build/lsh_functions.o -c ./src/Points/lsh_functions.cpp
+./build/lsh_functions.o: ./src/Points/lsh/lsh_functions.cpp
+	g++ -o ./build/lsh_functions.o -c ./src/Points/lsh/lsh_functions.cpp
 
-curve_grid_lsh: ./build/grid_lsh.o ./build/DataHandling1.o ./build/Curve.o
-	g++ -o ./curve_grid_lsh ./build/grid_lsh.o ./build/DataHandling1.o ./build/Curve.o
+./build/PointsDataHandling.o: ./src/Points/DataHandling.cpp
+	g++ -o ./build/PointsDataHandling.o -c ./src/Points/DataHandling.cpp
 
-curve_grid_hypercube: ./build/grid_hypercube.o ./build/DataHandling2.o ./build/Curve.o
-	g++ -o ./curve_grid_hypercube ./build/grid_hypercube.o ./build/DataHandling2.o ./build/Curve.o
+curve_grid_lsh: ./build/grid_lsh.o ./build/DataHandling1.o ./build/Curve.o ./build/utilities_grid.o ./build/lsh_functions.o ./build/utilities.o ./build/PointsDataHandling.o ./build/hypercube_functions.o
+	g++ -o ./curve_grid_lsh ./build/grid_lsh.o ./build/DataHandling1.o ./build/Curve.o ./build/utilities_grid.o ./build/lsh_functions.o ./build/utilities.o ./build/PointsDataHandling.o ./build/hypercube_functions.o 
+
+curve_grid_hypercube: ./build/grid_hypercube.o ./build/DataHandling2.o ./build/Curve.o ./build/utilities_grid.o ./build/hypercube_functions.o ./build/utilities.o ./build/PointsDataHandling.o ./build/lsh_functions.o
+	g++ -o ./curve_grid_hypercube ./build/grid_hypercube.o ./build/DataHandling2.o ./build/Curve.o ./build/utilities_grid.o ./build/hypercube_functions.o ./build/utilities.o ./build/PointsDataHandling.o ./build/lsh_functions.o
 
 curve_projection_lsh: ./build/projection_lsh.o ./build/DataHandling3.o ./build/Curve.o
 	g++ -o ./curve_projection_lsh ./build/projection_lsh.o ./build/DataHandling3.o ./build/Curve.o
@@ -59,6 +62,10 @@ curve_projection_hypercube: ./build/projection_hypercube.o ./build/DataHandling4
 
 ./build/Curve.o: ./src/Curves/Curve.cpp
 	g++ -o ./build/Curve.o -c ./src/Curves/Curve.cpp
+
+./build/utilities_grid.o: ./src/Curves/grid_lsh/utilities_grid.cpp
+	g++ -o ./build/utilities_grid.o -c ./src/Curves/grid_lsh/utilities_grid.cpp
+
 
 clean:
 	-rm ./lsh ./cube  ./curve_* ./build/*
