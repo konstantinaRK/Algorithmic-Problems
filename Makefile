@@ -30,11 +30,11 @@ curve_grid_lsh: ./build/grid_lsh.o ./build/DataHandling1.o ./build/Curve.o ./bui
 curve_grid_hypercube: ./build/grid_hypercube.o ./build/DataHandling2.o ./build/Curve.o ./build/utilities_grid.o ./build/hypercube_functions.o ./build/utilities.o ./build/PointsDataHandling.o ./build/lsh_functions.o
 	g++ -o ./curve_grid_hypercube ./build/grid_hypercube.o ./build/DataHandling2.o ./build/Curve.o ./build/utilities_grid.o ./build/hypercube_functions.o ./build/utilities.o ./build/PointsDataHandling.o ./build/lsh_functions.o
 
-curve_projection_lsh: ./build/projection_lsh.o ./build/DataHandling3.o ./build/Curve.o
-	g++ -o ./curve_projection_lsh ./build/projection_lsh.o ./build/DataHandling3.o ./build/Curve.o
+curve_projection_lsh: ./build/projection_lsh.o ./build/DataHandling3.o ./build/Curve.o ./build/Projection.o
+	g++ -o ./curve_projection_lsh ./build/projection_lsh.o ./build/DataHandling3.o ./build/Curve.o ./build/Projection.o
 
-curve_projection_hypercube: ./build/projection_hypercube.o ./build/DataHandling4.o ./build/Curve.o
-	g++ -o ./curve_projection_hypercube ./build/projection_hypercube.o ./build/DataHandling4.o ./build/Curve.o
+curve_projection_hypercube: ./build/projection_hypercube.o ./build/DataHandling4.o ./build/Curve.o ./build/Projection.o
+	g++ -o ./curve_projection_hypercube ./build/projection_hypercube.o ./build/DataHandling4.o ./build/Curve.o ./build/Projection.o
 
 ./build/grid_lsh.o: ./src/Curves/grid_lsh/grid_lsh.cpp
 	g++ -o ./build/grid_lsh.o -c ./src/Curves/grid_lsh/grid_lsh.cpp
@@ -66,6 +66,8 @@ curve_projection_hypercube: ./build/projection_hypercube.o ./build/DataHandling4
 ./build/utilities_grid.o: ./src/Curves/grid_lsh/utilities_grid.cpp
 	g++ -o ./build/utilities_grid.o -c ./src/Curves/grid_lsh/utilities_grid.cpp
 
+./build/Projection.o: ./src/Curves/Projection/Projection.cpp
+	g++ -o ./build/Projection.o -c ./src/Curves/Projection/Projection.cpp
 
 clean:
 	-rm ./lsh ./cube  ./curve_* ./build/*
