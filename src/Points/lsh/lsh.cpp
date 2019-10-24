@@ -26,6 +26,7 @@ int main(int argc, char* argv[]){
 
 	int dimension = pointset[0]->get_dimension();
 
+	// Create LSH ANN
 	LSH* lsh;
 	try{
 		lsh = new LSH(&pointset, L, k, dimension);}
@@ -34,6 +35,7 @@ int main(int argc, char* argv[]){
 		return 1;
 	}
 		
+	// Initialize metrics
 	double average_af = 0;
 	double max_af;
 	double time_af = 0;
@@ -56,6 +58,7 @@ int main(int argc, char* argv[]){
 		for (int i = 0; i < queries.size(); ++i)
 		{
 cout << queries[i]->get_id() << endl;
+
 			// Brute force
 			auto start = high_resolution_clock::now();
 			NN* true_nearest_neighbor = brute_force(queries[i], &pointset);
@@ -90,6 +93,7 @@ cout << queries[i]->get_id() << endl;
 			// Store the result of a query
 			update_output_lsh(&output, queries[i]->get_id(), lsh_nearest_neighbor, true_nearest_neighbor, duration_lsh.count(), duration_brute_force.count());
 
+			// Update metrics
 			double af = (double)lsh_nearest_neighbor->get_distance()/true_nearest_neighbor->get_distance();
 			double time = (double)duration_lsh.count()/duration_brute_force.count();
 			if ( average_af == 0 )
@@ -122,29 +126,7 @@ cout << "max_af is " << max_af << " and average af is " << average_af << " time 
 		}
 
 		// Check for a new queries file
-		string answer;
-		bool right_answer = false;
-		while ( !right_answer ){
-			cout << "Do you want to search the nearest neighbors in a new query file? y or n" << endl;
-			cin >> answer;
-
-			if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
-				right_answer = true;
-				cout << "Insert the name of the queries file" << endl;
-				cin >> queries_file;
-
-				cout << "Insert the name of the output_file" << endl;
-				cin >> output_file;
-			}
-			else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) ){
-				right_answer = true;
-				stop = true;
-			}
-			else{
-				right_answer = false;
-				cout << "Invalid answer try again" << endl;
-			}
-		}
+		stop = !check_for_new_queries(&queries_file, &output_file);
 		delete_vector<Point>(&queries);
 	}
 

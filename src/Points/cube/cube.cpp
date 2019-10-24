@@ -18,9 +18,10 @@ int main(int argc, char* argv[]){
 		return 1;
 	}
 
+	int r = 0;
 	// Read the dataset file
 	vector<Point*> pointset;
-	if ( !read(dataset_file, &pointset) ){
+	if ( !read(dataset_file, &pointset, &r) ){
 		delete_vector<Point>(&pointset);
 		return 1;
 	}
@@ -55,6 +56,7 @@ int main(int argc, char* argv[]){
 		if ( !read(queries_file, &queries) )
 		{
 			delete_vector<Point>(&queries);
+			delete hypercube;
 			return 1;
 		}
 cout << "End of reading queries" << endl;
@@ -73,7 +75,7 @@ cout << "End of reading queries" << endl;
 			if ( true_nearest_neighbor == NULL )
 			{
 				delete_vector<Point>(&queries);
-				delete_vector<Point>(&pointset);
+				delete hypercube;
 				return 1;
 			}
 
@@ -83,14 +85,14 @@ cout << "End of reading queries" << endl;
 
 // 			// Hypercube
 			start = high_resolution_clock::now();
-			NN * hypercube_neighbor = hypercube->predict(queries[i]);
+			NN * hypercube_neighbor = hypercube->predict(queries[i], r);
 			stop = high_resolution_clock::now();
 
 			if ( hypercube_neighbor == NULL )
 			{
 				delete true_nearest_neighbor;
 				delete_vector<Point>(&queries);
-				delete_vector<Point>(&pointset);
+				delete hypercube;
 				return 1;
 			}
 
@@ -131,36 +133,14 @@ cout << "max_af is " << max_af << " and average af is " << average_af << " time 
 		// Store output in output_file
 		if (!write_output(output_file, output)){
 			delete_vector<Point>(&queries);
-			delete_vector<Point>(&pointset);
+			delete hypercube;
 			return 1;
 		}
 
 		// Check for a new queries file
-		string answer;
-		bool right_answer = false;
-		while ( !right_answer ){
-			cout << "Do you want to search the nearest neighbors in a new query file? y or n" << endl;
-			cin >> answer;
-
-			if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
-				right_answer = true;
-				cout << "Insert the name of the queries file" << endl;
-				cin >> queries_file;
-
-				cout << "Insert the name of the output_file" << endl;
-				cin >> output_file;
-			}
-			else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) ){
-				right_answer = true;
-				stop = true;
-			}
-			else{
-				right_answer = false;
-				cout << "Invalid answer try again" << endl;
-			}
-		}
+		stop = !check_for_new_queries(&queries_file, &output_file);
 		delete_vector<Point>(&queries);
 	}
 
-	delete_vector<Point>(&pointset);
+	delete hypercube;
 }

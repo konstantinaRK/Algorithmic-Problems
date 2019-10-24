@@ -23,7 +23,7 @@ H::H(int dimension, int m, double w, int M){
 int H::operator[](Point* point){
 
 	int sum = 0;
-	int a;
+	int a = 0;
 	int d = point->get_dimension();
 	for (int i = 0; i < d; i++)
 	{
@@ -140,12 +140,12 @@ void LSH::train(){
 
 	int L = (this->g).size();
 	// Fill the hash tables with the pointset
-	unsigned int key;
+	unsigned int key = 0;
 	for (int j = 0; j < this->pointset.size(); ++j)
 	{
 		for (int i = 0; i < L; ++i)
 		{
-			key = (*(this->g[i]))[this->pointset[j]];
+			key = (*(this->g[i]))[(this->pointset)[j]];
 			if ( this->hash_tables[i].find(key) == this->hash_tables[i].end() )
 			{
 				// Insert the key
@@ -168,7 +168,6 @@ NN* LSH::predict(Point* point, int r){
 
 	int L  = (this->g).size();
 
-	// int break_point;
 	for (int i = 0; i < L; ++i)
 	{
 		unsigned int key = (*(this->g[i]))[point];
@@ -178,12 +177,13 @@ NN* LSH::predict(Point* point, int r){
 			vector<Point*> buckets_points = (this->hash_tables)[i].at(key);
 			Point* p;
 
-			// break_point = buckets_points.size()/2;
-			for (int j = 0; j < buckets_points.size(); ++j)
-			{
-				// if ( j >  break_point && j > 50 )
-				// 	break;
-				
+			int size = buckets_points.size();
+			int step = 1;
+			if ( r != 0 )
+				size/500 + 1;
+
+			for (int j = 0; j < size; j+=step)
+			{	
 				p = buckets_points[j];
 				distance = manhattan_dist(p, point);
 				if ( distance <= r )

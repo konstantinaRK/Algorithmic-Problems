@@ -43,6 +43,18 @@ unsigned int NN::r_near_neighbors_size(){
 	return (this->r_near_neighbors).size();
 }
 
+vector<string> NN::get_near_neighbors(void){
+	return this->r_near_neighbors;
+}
+
+void NN::add_neighbors(vector<string>* new_neighbors){
+
+	for (int i = 0; i < (*new_neighbors).size(); ++i)
+	{
+		(this->r_near_neighbors).push_back((*new_neighbors)[i]);
+	}
+}
+
 NN* brute_force(Point* point, vector<Point*>* pointset){
 
 	string min_id = "";
@@ -151,4 +163,33 @@ void print_hash_tables(vector<unordered_map<unsigned int, vector<Point*>>>* hash
 	}
 
 	cout << "num_of_hash_tables " << num_of_hash_tables << endl;
+}
+
+bool check_for_new_queries(string* queries_file, string* output_file){
+
+	string answer;
+	bool right_answer = false;
+
+	while ( !right_answer ){
+		cout << "Do you want to search the nearest neighbors in a new query file? y or n" << endl;
+		cin >> answer;
+
+		if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
+			// right_answer = true;
+			cout << "Insert the name of the queries file" << endl;
+			cin >> (*queries_file);
+
+			cout << "Insert the name of the output_file" << endl;
+			cin >> (*output_file);
+			return true;
+		}
+		else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) ){
+			right_answer = true;
+			return false;
+		}
+		else{
+			right_answer = false;
+			cout << "Invalid answer try again" << endl;
+		}
+	}
 }

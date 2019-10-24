@@ -35,6 +35,8 @@ class NN {
 		inline double get_distance(void){ return this->distance; }
 		unsigned int r_near_neighbors_size();
 		string get_near_neighbor(int i);
+		vector<string> get_near_neighbors(void);
+		void add_neighbors(vector<string>* new_neighbors);
 };
 
 template <class C>
@@ -53,5 +55,7 @@ double average_distance(vector<Point*>* pointset);
 
 void print_points(vector<Point*> points);
 void print_hash_tables(vector<unordered_map<unsigned int, vector<Point*>>>* hash_tables);
+
+bool check_for_new_queries(string* queries_file, string* output_file);
 
 #endif

@@ -27,12 +27,12 @@ class Hypercube{
 		void train();
 		unsigned int calc_maxdistance(unsigned int k_hypercube, unsigned int probes);
 		void create_cube_neighbors(unsigned int k_hypercube, unsigned int distance);
-		NN * find_vertice_NN(Point * point,unsigned int* cur_M, unsigned int key);
+		NN * find_vertice_NN(Point * point,unsigned int* cur_M, unsigned int key, int r);
 
 	public:
 		Hypercube(vector<Point*>* points, int dimension, unsigned int k_hypercube, unsigned int M, unsigned int probes);
 		~Hypercube();
-		NN* predict(Point* point);
+		NN* predict(Point* point, int r=0);
 };
 
 NN * hypercube_calc(Point * point, F * f_g, unordered_map<int, vector<Point*>>* hypercube, unsigned int M, unsigned int probes, vector<unsigned int>* neighbors);

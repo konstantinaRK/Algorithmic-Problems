@@ -110,7 +110,7 @@ double DTW_distance(Curve* x1, Curve* x2){
 	{
 		delete [] C[i];
 	}
-	delete C;
+	delete [] C;
 
 	return distance;
 
@@ -196,6 +196,14 @@ cout << "grid " << i << endl;
 		for (int j = 0; j < (this->curveset).size(); ++j)
 		{
 			point = ((this->Grids)[i])->snap((this->curveset)[j], j, max_d);
+			// if ( point == NULL )
+			// {
+			// 	delete_vector<Grid>(&(this->Grids));
+			// 	delete_vector<LSH>(&(this->lsh));
+			// 	delete_vector<Point>(&pointset);
+			// 	delete_vector<Curve>(&(this->curveset));
+			// 	return;
+			// }
 			pointset.push_back(point);
 		}
 

@@ -220,7 +220,7 @@ void update_output_lsh(string* output, string query_id, NN* lsh_nearest_neighbor
 	query += "R-near neighbors:\n";
 	for (int i = 0; i < lsh_nearest_neighbor->r_near_neighbors_size(); ++i)
 	{
-		query += lsh_nearest_neighbor->get_near_neighbor(i);
+		query += lsh_nearest_neighbor->get_near_neighbor(i) +"\n";
 	}
 	query += "\n";
 	(*output) = (*output) + query;
@@ -235,7 +235,7 @@ void update_output_cube(string* output, string query_id, NN* hypercube_nearest_n
 	query += "R-near neighbors:\n";
 	for (int i = 0; i < hypercube_nearest_neighbor->r_near_neighbors_size(); ++i)
 	{
-		query += hypercube_nearest_neighbor->get_near_neighbor(i);
+		query += hypercube_nearest_neighbor->get_near_neighbor(i) +"\n";
 	}
 	query += "\n";
 	(*output) = (*output) + query;

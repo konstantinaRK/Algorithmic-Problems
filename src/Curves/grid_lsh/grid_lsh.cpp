@@ -8,19 +8,19 @@
 using namespace std;
 using namespace std::chrono;
 
-void print_hash_table(vector<unordered_map<unsigned int, vector<Point*>>>* hash_tables){
-	int num_of_hash_tables;
-   for (auto hash_table : ((*hash_tables)[0])) 
-   {
-      	// cout << hash_table.first << endl;
-      	num_of_hash_tables ++;
-      	vector<Point*> points = hash_table.second;
-      	// print_points(points);
-      	// cout << endl << endl;
-	}
+// void print_hash_table(vector<unordered_map<unsigned int, vector<Point*>>>* hash_tables){
+// 	int num_of_hash_tables;
+//    for (auto hash_table : ((*hash_tables)[0])) 
+//    {
+//       	// cout << hash_table.first << endl;
+//       	num_of_hash_tables ++;
+//       	vector<Point*> points = hash_table.second;
+//       	// print_points(points);
+//       	// cout << endl << endl;
+// 	}
 
-	cout << "num_of_hash_tables " << num_of_hash_tables << endl;
-}
+// 	cout << "num_of_hash_tables " << num_of_hash_tables << endl;
+// }
 
 int main(int argc, char * argv[]){
 	
@@ -29,12 +29,11 @@ int main(int argc, char * argv[]){
 	int max_d, min_d;
 	int m, w;
 
-cout << "Begin" << endl;
-
 	vector <Curve*> dataset = file_handling(argc, argv, &queries_file, &output_file, &k_vec, &L_grid, &max_d, &min_d);
 
 cout << "End of reading" << endl;
 
+	// Create grid_lsh structure
 	Grid_LSH* grid_lsh;
 	try{
 		grid_lsh = new Grid_LSH(&dataset, L_grid, k_vec, max_d, min_d);
@@ -45,53 +44,8 @@ cout << "End of reading" << endl;
 	}
 
 cout << "grid_lsh created" << endl;
-// 	double delta = 8*min_d/100;
 
-// 	// Create Grids and g
-// 	vector<Grid*> Grids;
-// 	vector<G*> g;
-// 	vector<unordered_map<unsigned int, vector<Point*>>> hash_tables;
-// 	for (int i = 0; i < L_grid; ++i)
-// 	{
-// 		Grids.push_back(new Grid(delta));
-// 		g.push_back(new G(k_vec, max_d, m, w));
-// 		unordered_map<unsigned int, vector<Point*>> hash_table;
-// 		hash_tables.push_back(hash_table);
-// 	}
-// cout << "Grids made" << endl;
-
-// 	vector<Point*> pointset;
-// 	Point * point;
-// 	for (int i = 0; i < dataset.size(); ++i)
-// 	{
-// 		point = (Grids[i])->snap(dataset[i], i, max_d);	// lauos
-// 		pointset.push_back(point);
-// 	}
-
-// 	// w = 4*average_distance(&pointset);
-// cout << "w is " << w << endl;
-
-// 	// Fill hash tables with the dataset
-// 	unsigned int key;
-// 	for (int i = 0; i < pointset.size(); ++i)
-// 	{
-// 		for (int j = 0; j < L_grid; ++j)
-// 		{
-// 			key = (*(g[j]))[pointset[i]];
-// 			if ( hash_tables[j].find(key) == hash_tables[j].end() )
-// 			{
-// 				// Insert the key
-// 				vector<Point*> p;
-// 				p.push_back(pointset[i]);
-// 				hash_tables[j].insert(make_pair(key, p));
-// 			}
-// 			else
-// 				hash_tables[j].at(key).push_back(pointset[i]);
-// 		}
-// 	}
-// cout << "filled hash tables" << endl;
-// print_hash_table(&hash_tables);
-
+	// Initialize metrics
 	double average_af = 0;
 	double max_af;
 	double time_af = 0;
@@ -117,11 +71,8 @@ cout << queries[i]->get_id() << endl;
 
 		    if ( true_nearest_neighbor == NULL )
 		    {
-		    	// delete_vector<G>(&g);
 		    	delete_vector<Curve>(&queries);
 		    	delete grid_lsh;
-				// delete_vector<Curve>(&dataset);
-				// delete_unordered_map(&hash_tables);
 				cerr << "no neighbor found" << endl;
 				return 1;
 		    }
@@ -138,7 +89,7 @@ cout << queries[i]->get_id() << endl;
 
 		   	if ( grid_lsh_nearest_neighbor == NULL )
 		    {
-cout << "nearest neighbor is null" << endl;
+				cout << "nearest neighbor is null" << endl << endl;
 		    	delete true_nearest_neighbor;
 				continue;
 		    }
@@ -151,6 +102,8 @@ cout << "nearest neighbor is null" << endl;
 
 			double af = (double)(grid_lsh_nearest_neighbor->get_distance()+1)/(true_nearest_neighbor->get_distance()+1);
 			double time = (double)duration_lsh.count()/duration_brute_force.count();
+			
+			// Update metrics
 			if ( average_af == 0 )
 			{
 				average_af = af;
@@ -167,7 +120,6 @@ cout << "nearest neighbor is null" << endl;
 		    delete grid_lsh_nearest_neighbor;
 		}
 
-// cout << "time_af is " << time_af << " and queries size is " << queries.size() << endl;
 		average_af = average_af/queries.size();
 		time_af = time_af/queries.size();
 
@@ -177,42 +129,14 @@ cout << "max_af is " << max_af << " and average af is " << average_af << " time 
 		if (!write_output(output_file, output)){
 			delete_vector<Curve>(&queries);
 			delete grid_lsh;
-			// delete_vector<G>(&g);
-			// delete_vector<Curve>(&dataset);
-			// delete_unordered_map(&hash_tables);
 			return 1;
 		}
 
 		// Check for a new queries file
-		string answer;
-		bool right_answer = false;
-		while ( !right_answer ){
-			cout << "Do you want to search the nearest neighbors in a new query file? y or n" << endl;
-			cin >> answer;
-
-			if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
-				right_answer = true;
-				cout << "Insert the name of the queries file" << endl;
-				cin >> queries_file;
-
-				cout << "Insert the name of the output_file" << endl;
-				cin >> output_file;
-			}
-			else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) ){
-				right_answer = true;
-				stop = true;
-			}
-			else{
-				right_answer = false;
-				cout << "Invalid answer try again" << endl;
-			}
-		}
+		stop = !check_for_new_queries(&queries_file, &output_file);
 		delete_vector<Curve>(&queries);
 	}
 
-	// Free data memory
-	// delete_unordered_map(&hash_tables);
-	// delete_vector<Curve>(&dataset);
 	delete grid_lsh;
 	return 0;
 }

@@ -164,10 +164,11 @@ void Hypercube::create_cube_neighbors(unsigned int k_hypercube, unsigned int dis
 	}
 }
 
-NN * Hypercube::find_vertice_NN(Point * point,unsigned int* cur_M, unsigned int key){
+NN * Hypercube::find_vertice_NN(Point * point,unsigned int* cur_M, unsigned int key, int r){
 
-	int min_distance;
+	int min_distance, distance;
 	string min_id = "";
+	set<string> near_neighbors;
 
 	if ( (this->cube).find(key) != (this->cube).end() )
 	{
@@ -177,15 +178,18 @@ NN * Hypercube::find_vertice_NN(Point * point,unsigned int* cur_M, unsigned int 
 		for (int i = 0; (*cur_M) > 0 && i < buckets_points.size(); (*cur_M)--, i++)
 		{				
 			p = buckets_points[i];
+			distance = manhattan_dist(p, point);
+			if ( distance <= r )
+				near_neighbors.insert(p->get_id());
+
 			// If this is the first point
 			if ( min_id == "" )
 			{
 				min_id = p->get_id();
-				min_distance = manhattan_dist(p, point);
+				min_distance = distance;
 			}
 			else
 			{
-				int distance = manhattan_dist(p, point);
 				if ( distance < min_distance )
 				{
 					min_distance = distance;
@@ -200,28 +204,30 @@ NN * Hypercube::find_vertice_NN(Point * point,unsigned int* cur_M, unsigned int 
 	}
 
 	NN * nearest_neighbor = NULL;
+	if ( min_id.compare("") != 0 ){
 
-	try
-	{
-		nearest_neighbor = new NN(min_id, min_distance);
+		near_neighbors.erase(min_id);
+		try
+		{
+			nearest_neighbor = new NN(min_id, min_distance, &near_neighbors);
+		}
+		catch(bad_alloc&)
+		{
+			cerr << "hypercube::No memory available" << endl;
+			return NULL;
+		}
 	}
-	catch(bad_alloc&)
-	{
-		cerr << "hypercube::No memory available" << endl;
-		return NULL;
-	}
-
 	return nearest_neighbor;
 }
 
-NN* Hypercube::predict(Point* point){
+NN* Hypercube::predict(Point* point, int r){
 
 	NN *nearest_neighbor = NULL, *temp_neighbor = NULL;
 
 	unsigned int M = this->M;
 	unsigned int probes = this->probes;
 	unsigned int key = (this->F_g)->calc_F(point);
-	nearest_neighbor = this->find_vertice_NN(point, &M, key);
+	nearest_neighbor = this->find_vertice_NN(point, &M, key, r);
 	probes --;
 	if (M > 0 && probes > 0)
 	{
@@ -230,15 +236,17 @@ NN* Hypercube::predict(Point* point){
 		{
 			unsigned int temp_key = key ^ (this->cube_neighbors).at(i);	
 
-			temp_neighbor = this->find_vertice_NN(point, &M, temp_key);
+			temp_neighbor = this->find_vertice_NN(point, &M, temp_key, r);
 			if (nearest_neighbor == NULL)
 			{
 				nearest_neighbor = temp_neighbor;
 			}
 			else if ((temp_neighbor != NULL) && (nearest_neighbor->get_distance() > temp_neighbor->get_distance()))
 			{
+				vector<string> near_neighbors = nearest_neighbor->get_near_neighbors();
 				delete nearest_neighbor;
 				nearest_neighbor = temp_neighbor;
+				nearest_neighbor->add_neighbors(&near_neighbors);
 			}
 			else if(temp_neighbor != NULL)
 			{
