@@ -1,4 +1,5 @@
 #include "DataHandling.hpp"
+#include "../Projection.hpp"
 
 using namespace std;
 
@@ -62,9 +63,9 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 
 	for (int i = 0; i < dataset.size(); i++)
 	{
-		if ((*M) < dataset.at(i)->get_size())
+		if ((*M) < dataset.at(i)->get_length())
 		{
-			(*M) = dataset.at(i)->get_size();
+			(*M) = dataset.at(i)->get_length();
 		}
 	}
 
@@ -77,58 +78,3 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 	return dataset;
 }
 
-vector <Curve*> struct_initialization(string file){
-
-	ifstream data;
-
-	vector <Curve *> data_vector;
-// cout << file << endl; getchar();
-	data.open(file);
-
-	
-	string line;
-	int i = 0;
-	if (data.is_open())
-	{
-		while ( getline (data, line) && line.length() > 0 )
-		{
-// cout << line << endl;
-			int pos1, pos2;
-			string sub;
-
-			pos2 = line.find("\t");
-			sub = line.substr(0, pos2);
-
-			data_vector.push_back(new Curve(sub));
-
-			double x,y;
-			while (!line.empty())
-			{
-				// Find coordinate x
-				pos1 = line.find("("); 
-				pos2 = line.find(","); 
-				sub = line.substr(pos1 + 1, pos2 - pos1 - 1); 
-				x = stod(sub);
-
-				// Move line
-				line = line.substr(pos2 + 2);
-
-				// Find coordinate y
-				pos2 = line.find(")");
-				sub = line.substr(0, pos2); 
-				y = stod(sub);
-
-				// Move line
-				line = line.substr(pos2 + 1);
-
-				data_vector.at(i)->add_point(x, y);
-			}
-
-			i++;
-		}
-		data.close();
-	}
-
-	return data_vector;
-
-}
