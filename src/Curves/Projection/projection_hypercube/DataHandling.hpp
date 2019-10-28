@@ -10,6 +10,6 @@
 
 using namespace std;
 
-vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, int * K, int * M, int * probes, double * e);
+vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, unsigned int * K, unsigned int * M_hyper, unsigned int * probes, double * e, unsigned int * M);
 
 #endif

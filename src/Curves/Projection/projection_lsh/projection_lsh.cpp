@@ -22,16 +22,16 @@ int main(int argc, char * argv[]){
 		cerr << "Could not find data!" << endl;
 		return -1;
 	}
-cout << "End of reading" << endl;
+
+	cout << "End of reading" << endl;
+	
 	// Create G matrix
-/*!!!!!!!!!!*/
 	int d_dim = 2;
 	int k_dim = (-1) * d_dim * log2(e)/e/e;
 	double **G = createG(k_dim, d_dim);
 
 	// Fill Matrix M*M
-	IJ_Cell *** MM_table = train(dataset, M, G, d_dim, k_dim, L, K, "LSH");
-cout << "End of training" << endl;
+	IJ_Cell *** MM_table = train_LSH(dataset, M, G, d_dim, k_dim, L, K);
 	if (MM_table == NULL)
 	{
 		for (int i = 0; i < dataset.size(); i++)
@@ -42,8 +42,11 @@ cout << "End of training" << endl;
 		dataset.clear();
 		return 1;
 	}
-int counter = 0, counter_true = 0;
-	// Read and execute queries
+
+	cout << "End of training" << endl;
+
+	// Variable for statistics
+	int counter = 0 /* Nearest neighbor not found */, counter_true = 0 /* Same neighbor with brute force found */;
 	double average_af = 0;
 	double max_af;
 	double time_af = 0;
@@ -60,16 +63,14 @@ int counter = 0, counter_true = 0;
 			stop = true;
 			break;
 		}
-cout << "End of reading queries" << endl;
+		cout << "End of reading queries" << endl;
 
 		for (int i = 0; i < queries.size(); ++i)
 		{
-// cout << "arxh epanalhpshs" << endl;
 			// Brute force
 			auto start = high_resolution_clock::now();
 			NN* true_nearest_neighbor = curves_brute_force(queries[i], &dataset);
 		    auto stop = high_resolution_clock::now();
-// cout << "brute force end " << endl;
 		    if ( true_nearest_neighbor == NULL )
 		    {
 		    	for (int i = 0; i < M; i++)
@@ -81,37 +82,36 @@ cout << "End of reading queries" << endl;
 				cerr << "no neighbor found" << endl;
 				return 1;
 		    }
-// cout << "print info" << endl;
+
 		    auto duration_brute_force = duration_cast<microseconds>(stop - start); 
-			// cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << true_nearest_neighbor->get_id() << ", " << true_nearest_neighbor->get_distance() << endl; 
-			// cout << "time : " << duration_brute_force.count() << endl;
-// cout << "lsh start" << endl;
-			// // LSH
+			cout << "nearest_neighbor of "<< queries[i]->get_id() << " is "  << true_nearest_neighbor->get_id() << ", " << true_nearest_neighbor->get_distance() << endl; 
+			cout << "time : " << duration_brute_force.count() << endl;
+
+			// LSH calculation
 			start = high_resolution_clock::now();
 			NN* lsh_nearest_neighbor = predict(MM_table, M, dataset, queries[i], G, d_dim, k_dim);
 		    stop = high_resolution_clock::now();
-// cout << "lsh stop" << endl;
 		   	if ( lsh_nearest_neighbor == NULL )
 		    {
-counter++;
+				counter++;
 		    	delete true_nearest_neighbor;
 				continue;
 		    }
 		    auto duration_lsh = duration_cast<microseconds>(stop - start); 
-		 //    cout << "lsh_nearest_neighbor of "<< queries[i]->get_id() << " is "  << lsh_nearest_neighbor->get_id() << ", " << lsh_nearest_neighbor->get_distance() << endl; 
-			// cout << "time : " << duration_lsh.count() << endl << endl;
+		    cout << "lsh_nearest_neighbor of "<< queries[i]->get_id() << " is "  << lsh_nearest_neighbor->get_id() << ", " << lsh_nearest_neighbor->get_distance() << endl; 
+			cout << "time : " << duration_lsh.count() << endl << endl;
 		
 			// // Store the result of a query
-// 			update_output_curves(&output, queries[i]->get_id(), lsh_nearest_neighbor, true_nearest_neighbor, "Projection", "LSH");
-// // cout << "egrapse se arxeio" << endl;
-// // cout << "distancουλα" << true_nearest_neighbor->get_distance() << endl;;			
-			double af = (lsh_nearest_neighbor->get_distance()+1)/(true_nearest_neighbor->get_distance()+1);
-// // cout << "af" << endl;
-			double time = duration_lsh.count()/duration_brute_force.count();
-// // cout << "time" << endl;
-
-if (lsh_nearest_neighbor->get_id().compare(true_nearest_neighbor->get_id()) == 0) counter_true++;
+			update_output_curves(&output, queries[i]->get_id(), lsh_nearest_neighbor, true_nearest_neighbor, "Projection", "LSH");
 		
+			if (lsh_nearest_neighbor->get_id().compare(true_nearest_neighbor->get_id()) == 0)
+			{
+				counter_true++;
+			}
+		
+			// Calculating average and max values
+			double af = (lsh_nearest_neighbor->get_distance()+1)/(true_nearest_neighbor->get_distance()+1);
+			double time = duration_lsh.count()/duration_brute_force.count();
 			if ( average_af == 0 )
 			{
 				average_af = af;
@@ -124,22 +124,20 @@ if (lsh_nearest_neighbor->get_id().compare(true_nearest_neighbor->get_id()) == 0
 				average_af += af;
 				time_af += time;
 			}
-// cout << "problhma me delete" << endl;
+
 		    delete true_nearest_neighbor;
 		    true_nearest_neighbor = NULL;
-// cout << "provlhma me delete" << endl;
 		    delete lsh_nearest_neighbor;
 		    lsh_nearest_neighbor = NULL;
-// cout << "telos epanalhpshs" << endl;
+
 		}
-// cout << "average" << endl;
+
 		average_af = average_af/(queries.size() - counter);
-// cout << "time average" << endl;
 		time_af = time_af/(queries.size() - counter);
-// cout << "telos average" << endl;
-cout << "max_af is " << max_af << " and average af is " << average_af << " time comp. is : " << time_af << endl;
-cout << "not found queries = " << counter << " of " << queries.size() << endl;
-cout << "same curve" << counter_true << endl;
+
+		cout << "max_af is " << max_af << " and average af is " << average_af << " time comp. is : " << time_af << endl;
+		cout << "not found queries = " << counter << " of " << queries.size() << endl;
+		cout << "same curve" << counter_true << endl;
 		// Store output in output_file
 		// if (!write_output(output_file, output)){
 		// 	for (int i = 0; i < M; i++)

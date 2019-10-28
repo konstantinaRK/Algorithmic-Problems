@@ -6,6 +6,7 @@
 #include "../Curve.hpp"
 // #include "../utilities.hpp"
 #include "../../Points/lsh/lsh_functions.hpp"
+#include "../../Points/cube/hypercube_functions.hpp"
 #include "../grid_lsh/utilities_grid.hpp"
 #include "../../Points/utilities.hpp"
 
@@ -19,7 +20,8 @@ class Traversal
 		vector <pair<unsigned int, unsigned int>> get_traversal(void);
 		int get_traversal_size(void);
 		void curve_snap(vector <pair<double, double>>* curve_points, double ** G, unsigned int Gd_dim, unsigned int Gk_dim, vector <double>* new_vector);
-		virtual void train(unsigned int curve_size, vector <Curve*> dataset, int L, int k, double ** G, unsigned int Gd_dim, unsigned int Gk_dim) {/*cout << " giati me gamas?" << endl;*/};
+		virtual void train(unsigned int curve_size, vector <Curve*> dataset, int L, int k, double ** G, unsigned int Gd_dim, unsigned int Gk_dim) {};
+		virtual void train(unsigned int curve_size, vector <Curve*> dataset, unsigned int M_hyper, unsigned int k, unsigned int probes, double ** G, unsigned int Gd_dim, unsigned int Gk_dim){};
 		virtual NN * predict(Curve * query, double ** G, unsigned int Gd_dim, unsigned int Gk_dim) { cout << " giati me gamas?" << endl;};
 };
 
@@ -41,8 +43,8 @@ class Traversal_Hypercube: public Traversal
 	public:
 		Traversal_Hypercube(vector <pair<unsigned int, unsigned int>> traversal): Traversal(traversal){};
 		~Traversal_Hypercube(){};
-		virtual void train(unsigned int curve_size, vector <Curve*> dataset, int L, int k, double ** G, unsigned int Gd_dim, unsigned int Gk_dim){};
-		virtual NN * predict(Curve * query, double ** G, unsigned int Gd_dim, unsigned int Gk_dim){};
+		virtual void train(unsigned int curve_size, vector <Curve*> dataset, unsigned int M_hyper, unsigned int k, unsigned int probes, double ** G, unsigned int Gd_dim, unsigned int Gk_dim);
+		virtual NN * predict(Curve * query, double ** G, unsigned int Gd_dim, unsigned int Gk_dim);
 };
 
 
@@ -54,18 +56,22 @@ class IJ_Cell
 		void calc_diagon(set <pair<unsigned int, unsigned int>> * diagonal, unsigned int i, unsigned int j, unsigned int dist);
 		void calc_traversals(set <pair<unsigned int, unsigned int>> * diagonal, pair<unsigned int, unsigned int> start, pair<unsigned int, unsigned int> end, vector<pair<unsigned int, unsigned int>> traversal, string type);
 	public:
+		// Constructor for LSH
 		IJ_Cell(string type, vector <Curve*> dataset, unsigned int L, unsigned int k, double ** G, unsigned int Gd_dim, unsigned int Gk_dim, unsigned int i, unsigned int j, unsigned int dist = 0);
+		// Constructor for hypercube
+		IJ_Cell(string type, vector <Curve*> dataset, unsigned int M_hyper, unsigned int k, unsigned int probes, double ** G, unsigned int Gd_dim, unsigned int Gk_dim, unsigned int i, unsigned int j, unsigned int dist = 0);
 		~IJ_Cell();
 		NN * predict(vector <Curve*> data, Curve * query, double ** G, unsigned int Gd_dim, unsigned int Gk_dim);
 };
 
 double ** createG(int d, int k);
-IJ_Cell *** train(vector <Curve*> data, unsigned int M, double **G, unsigned int Gd_dim, unsigned int Gk_dim, unsigned int L, unsigned int k, string type);
+IJ_Cell *** train_LSH(vector <Curve*> data, unsigned int M, double **G, unsigned int Gd_dim, unsigned int Gk_dim, unsigned int L, unsigned int k);
+IJ_Cell *** train_Hypercube(vector <Curve*> data, unsigned int M, double **G, unsigned int Gd_dim, unsigned int Gk_dim, unsigned int M_hyper, unsigned int k, unsigned int probes);
 NN * predict(IJ_Cell *** MM_table, unsigned int M, vector <Curve*> data, Curve * query, double ** G, unsigned int Gd_dim, unsigned int Gk_dim);
 
+
+// For data initialization of 2b1, 2b2
 vector <Curve*> struct_initialization(string file);
-
-
 
 // for utilities
 bool matrix_mult(pair <double, double> pair, double ** G, unsigned int Gd_dim, unsigned int Gk_dim, vector <double> * mult_res);

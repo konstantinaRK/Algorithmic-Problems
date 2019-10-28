@@ -3,13 +3,18 @@
 
 using namespace std;
 
-vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, int * K, int * M, int * probes, double * e)
+vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, unsigned int * K, unsigned int * M_hyper, unsigned int * probes, double * e, unsigned int *M)
 {
 	string input = "";
 	*queries = "";
 	*output = "";
 
 	*e = 0.5;
+	*M_hyper = 10;
+	*K = 3;
+	*probes = 2;
+
+	*M = 0;
 
 	if (argc % 2 != 1)
 	{
@@ -33,7 +38,7 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 		}
 		else if (strcmp(argv[i], "-M") == 0)
 		{
-			*M = atoi(argv[i+1]);
+			*M_hyper = atoi(argv[i+1]);
 		}
 		else if (strcmp(argv[i], "-probes") == 0)
 		{
@@ -49,19 +54,32 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 		}
 	}
 
+	// Ask for input file name if it's not already given
 	if (input.empty())
 	{
 		cout << "Give input file path." << endl;
 		cin >> input;
 	}
+	// Ask for query file name if it's not already given
 	if ((*queries).empty())
 	{
 		cout << "Give queries file path." << endl;
 		cin >> *queries;
 	}
 
+	// Initialize dataset
 	vector <Curve*> dataset = struct_initialization(input);
 
+	// Calculate M for MM_matrix
+	for (int i = 0; i < dataset.size(); i++)
+	{
+		if ((*M) < dataset.at(i)->get_length())
+		{
+			(*M) = dataset.at(i)->get_length();
+		}
+	}
+
+	// Ask for result file name if it's not already given
 	if ((*output).empty())
 	{
 		cout << "Give results file path" << endl;
