@@ -2,13 +2,13 @@
 
 using namespace std;
 
-vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, int * K, int * M, int * probes, double * e)
+vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, unsigned int * K, unsigned int * M, unsigned int * probes, unsigned int * L, int* max_d, int* min_d)
 {
 	string input = "";
 	*queries = "";
 	*output = "";
 
-	*e = 0.5;
+	*L = 4;
 
 	if (argc % 2 != 1)
 	{
@@ -38,9 +38,9 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 		{
 			*probes = atoi(argv[i+1]);
 		}
-		else if (strcmp(argv[i], "-e") == 0)
+		else if (strcmp(argv[i], "-L_grid") == 0)
 		{
-			*e = atof(argv[i+1]);
+			*L = atoi(argv[i+1]);
 		}
 		else if (strcmp(argv[i], "-o") == 0)
 		{
@@ -59,7 +59,7 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 		cin >> *queries;
 	}
 
-	vector <Curve*> dataset = struct_initialization(input);
+	vector <Curve*> dataset = struct_initialization(input, max_d, min_d);
 
 	if ((*output).empty())
 	{
@@ -70,7 +70,7 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 	return dataset;
 }
 
-vector <Curve*> struct_initialization(string file){
+vector <Curve*> struct_initialization(string file, int* max_d, int* min_d){
 
 	ifstream data;
 
@@ -80,6 +80,7 @@ vector <Curve*> struct_initialization(string file){
 
 	string line;
 	int i = 0;
+	int cur_d;
 	if (data.is_open())
 	{
 		while ( getline (data, line) )
@@ -114,6 +115,14 @@ vector <Curve*> struct_initialization(string file){
 				line = line.substr(pos2 + 1);
 
 				data_vector.at(i)->add_point(x, y);
+			}
+			if ( max_d!=NULL && min_d!=NULL ){
+				cur_d = data_vector[i]->get_length();
+				if ( i==0 || cur_d > (*max_d)){
+					(*max_d) = cur_d;
+				}
+				if ( i==0 || cur_d < (*min_d) )
+					(*min_d) = cur_d;
 			}
 
 			i++;
