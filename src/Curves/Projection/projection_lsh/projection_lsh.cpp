@@ -151,29 +151,7 @@ int main(int argc, char * argv[]){
 		// }
 
 		// Check for a new queries file
-		string answer;
-		bool right_answer = false;
-		while ( !right_answer ){
-			cout << "Do you want to search the nearest neighbors in a new query file? y or n" << endl;
-			cin >> answer;
-
-			if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
-				right_answer = true;
-				cout << "Insert the name of the queries file" << endl;
-				cin >> query_file;
-
-				cout << "Insert the name of the output_file" << endl;
-				cin >> output_file;
-			}
-			else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) ){
-				right_answer = true;
-				stop = true;
-			}
-			else{
-				right_answer = false;
-				cout << "Invalid answer try again" << endl;
-			}
-		}
+		stop = !check_for_new_queries(&query_file, &output_file);
 		delete_vector<Curve>(&queries);
 	}
 

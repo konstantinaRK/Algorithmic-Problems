@@ -60,6 +60,7 @@ void Traversal_LSH::train(unsigned int curve_size, vector <Curve*> dataset, int 
 
 		if (cur_curve->get_length() == curve_size) // We care for curves of size curve_size because we are in a certain cell of MM_matrix
 		{
+			// Take traversals' i coordinate (i,j)
 			for (int point = 0; point < this->get_traversal_size(); point++)
 			{
 				curve_points.push_back((*cur_curve)[get<0>(this->get_traversal().at(point))]);
@@ -95,6 +96,7 @@ NN * Traversal_LSH::predict(Curve * query, double ** G, unsigned int Gd_dim, uns
 	// Fetch curve points
 	vector <pair<double, double>> curve_points;
 	vector <double>	new_vector;
+	// Take traversals' j coordinate (i,j)
 	for (int point = 0; point < this->get_traversal_size(); point++)
 	{
 		curve_points.push_back((*query)[get<1>(this->get_traversal().at(point))]);
@@ -116,6 +118,17 @@ NN * Traversal_LSH::predict(Curve * query, double ** G, unsigned int Gd_dim, uns
 	return return_value;
 }
 
+// Class Traversal_Hypercube function
+Traversal_Hypercube::Traversal_Hypercube(vector <pair<unsigned int, unsigned int>> traversal): Traversal(traversal)
+{
+	this->cube = NULL;
+}
+
+Traversal_Hypercube::~Traversal_Hypercube()
+{
+	delete this->cube;
+}
+
 void Traversal_Hypercube::train(unsigned int curve_size, vector <Curve*> dataset, unsigned int M_hyper, unsigned int k, unsigned int probes, double ** G, unsigned int Gd_dim, unsigned int Gk_dim)
 /*	Fetching curves' points according to traversal, multiplying with G, Feeding data to Hypercube */
 {
@@ -130,6 +143,7 @@ void Traversal_Hypercube::train(unsigned int curve_size, vector <Curve*> dataset
 
 		if (cur_curve->get_length() == curve_size) // We care for curves of size curve_size because we are in a certain cell of MM_matrix
 		{
+			// Take traversals' i coordinate (i,j)
 			for (int point = 0; point < this->get_traversal_size(); point++)
 			{
 				curve_points.push_back((*cur_curve)[get<0>(this->get_traversal().at(point))]);
@@ -164,6 +178,7 @@ NN * Traversal_Hypercube::predict(Curve * query, double ** G, unsigned int Gd_di
 	// Fetch curve points
 	vector <pair<double, double>> curve_points;
 	vector <double>	new_vector;
+	// Take traversals' j coordinate (i,j)
 	for (int point = 0; point < this->get_traversal_size(); point++)
 	{
 		curve_points.push_back((*query)[get<1>(this->get_traversal().at(point))]);

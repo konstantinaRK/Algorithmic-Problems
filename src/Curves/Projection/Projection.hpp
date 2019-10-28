@@ -41,8 +41,8 @@ class Traversal_Hypercube: public Traversal
 	private:
 		Hypercube * cube;
 	public:
-		Traversal_Hypercube(vector <pair<unsigned int, unsigned int>> traversal): Traversal(traversal){};
-		~Traversal_Hypercube(){};
+		Traversal_Hypercube(vector <pair<unsigned int, unsigned int>> traversal);
+		~Traversal_Hypercube();
 		virtual void train(unsigned int curve_size, vector <Curve*> dataset, unsigned int M_hyper, unsigned int k, unsigned int probes, double ** G, unsigned int Gd_dim, unsigned int Gk_dim);
 		virtual NN * predict(Curve * query, double ** G, unsigned int Gd_dim, unsigned int Gk_dim);
 };
