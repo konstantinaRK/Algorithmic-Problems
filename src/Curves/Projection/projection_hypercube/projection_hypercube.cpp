@@ -108,7 +108,7 @@ int main(int argc, char * argv[]){
 			cout << "time : " << duration_hypercube.count() << endl << endl;
 		
 			// Store the result of a query
-			update_output_curves(&output, queries[i]->get_id(), hypercube_nearest_neighbor, true_nearest_neighbor, "Projection", "LSH");
+			update_output_curves(&output, queries[i]->get_id(), hypercube_nearest_neighbor, true_nearest_neighbor, "Projection", "Hypercube");
 		
 			if (hypercube_nearest_neighbor->get_id().compare(true_nearest_neighbor->get_id()) == 0)
 			{
@@ -144,17 +144,18 @@ int main(int argc, char * argv[]){
 		cout << "max_af is " << max_af << " and average af is " << average_af << " time comp. is : " << time_af << endl;
 		cout << "not found queries = " << counter << " of " << queries.size() << endl;
 		cout << "same curve = " << counter_true << endl;
+		
 		// Store output in output_file
-		// if (!write_output(output_file, output)){
-		// 	for (int i = 0; i < M; i++)
-		// 		{
-		// 			delete [] MM_table[i];
-		// 		}
-		// 		delete [] MM_table;
-		// 	delete_vector<Curve>(&queries);
-		// 	delete_vector<Curve>(&dataset);
-		// 	return 1;
-		// }
+		if (!write_output(output_file, output)){
+			for (int i = 0; i < M; i++)
+				{
+					delete [] MM_table[i];
+				}
+				delete [] MM_table;
+			delete_vector<Curve>(&queries);
+			delete_vector<Curve>(&dataset);
+			return 1;
+		}
 
 		// Check for a new queries file
 		stop = !check_for_new_queries(&query_file, &output_file);
