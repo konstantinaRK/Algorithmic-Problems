@@ -1,14 +1,20 @@
 #include "DataHandling.hpp"
+#include "../Projection.hpp"
 
 using namespace std;
 
-vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, int * K, int * M, int * probes, double * e)
+vector <Curve *> file_handling(int argc, char * argv[], string * queries, string * output, unsigned int * K, unsigned int * M_hyper, unsigned int * probes, double * e, unsigned int *M)
 {
 	string input = "";
 	*queries = "";
 	*output = "";
 
 	*e = 0.5;
+	*M_hyper = 10;
+	*K = 3;
+	*probes = 2;
+
+	*M = 0;
 
 	if (argc % 2 != 1)
 	{
@@ -32,7 +38,7 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 		}
 		else if (strcmp(argv[i], "-M") == 0)
 		{
-			*M = atoi(argv[i+1]);
+			*M_hyper = atoi(argv[i+1]);
 		}
 		else if (strcmp(argv[i], "-probes") == 0)
 		{
@@ -48,19 +54,32 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 		}
 	}
 
+	// Ask for input file name if it's not already given
 	if (input.empty())
 	{
 		cout << "Give input file path." << endl;
 		cin >> input;
 	}
+	// Ask for query file name if it's not already given
 	if ((*queries).empty())
 	{
 		cout << "Give queries file path." << endl;
 		cin >> *queries;
 	}
 
+	// Initialize dataset
 	vector <Curve*> dataset = struct_initialization(input);
 
+	// Calculate M for MM_matrix
+	for (int i = 0; i < dataset.size(); i++)
+	{
+		if ((*M) < dataset.at(i)->get_length())
+		{
+			(*M) = dataset.at(i)->get_length();
+		}
+	}
+
+	// Ask for result file name if it's not already given
 	if ((*output).empty())
 	{
 		cout << "Give results file path" << endl;
@@ -68,59 +87,4 @@ vector <Curve *> file_handling(int argc, char * argv[], string * queries, string
 	}
 
 	return dataset;
-}
-
-vector <Curve*> struct_initialization(string file){
-
-	ifstream data;
-
-	vector <Curve *> data_vector;
-
-	data.open(file);
-
-	string line;
-	int i = 0;
-	if (data.is_open())
-	{
-		while ( getline (data, line) )
-		{
-			int pos1, pos2;
-			string sub;
-
-			pos2 = line.find("\t");
-			sub = line.substr(0, pos2);
-			string id = sub;
-
-			data_vector.push_back(new Curve(id));
-
-			double x,y;
-			while (!line.empty())
-			{
-				// Find coordinate x
-				pos1 = line.find("("); 
-				pos2 = line.find(","); 
-				sub = line.substr(pos1 + 1, pos2 - pos1 - 1); 
-				x = stod(sub);
-
-				// Move line
-				line = line.substr(pos2 + 2);
-
-				// Find coordinate y
-				pos2 = line.find(")");
-				sub = line.substr(0, pos2); 
-				y = stod(sub);
-
-				// Move line
-				line = line.substr(pos2 + 1);
-
-				data_vector.at(i)->add_point(x, y);
-			}
-
-			i++;
-		}
-		data.close();
-	}
-
-	return data_vector;
-
 }
