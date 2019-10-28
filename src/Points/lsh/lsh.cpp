@@ -15,7 +15,8 @@ int main(int argc, char* argv[]){
 	if ( !check_arguments_lsh(argc, argv, &dataset_file, &queries_file, &k, &L, &output_file) )
 		return 1;
 
-	int r = 0;
+	int r = 0;	// range of near neighbors
+
 	// Read the dataset file
 	vector<Point*> pointset;
 	if ( !read(dataset_file, &pointset, &r) ){
@@ -54,11 +55,8 @@ int main(int argc, char* argv[]){
 		}
 		cout << "End of reading queries" << endl;
 
-		// Check the queries
-		for (int i = 0; i < queries.size(); ++i)
+		for (int i = 0; i < queries.size(); ++i)	// For every query
 		{
-cout << queries[i]->get_id() << endl;
-
 			// Brute force
 			auto start = high_resolution_clock::now();
 			NN* true_nearest_neighbor = brute_force(queries[i], &pointset);
@@ -129,6 +127,7 @@ cout << "max_af is " << max_af << " and average af is " << average_af << " time 
 		stop = !check_for_new_queries(&queries_file, &output_file);
 		delete_vector<Point>(&queries);
 	}
-
+	
+	// Delete LSH ANN
 	delete lsh;
 }

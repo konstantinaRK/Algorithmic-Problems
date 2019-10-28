@@ -9,13 +9,49 @@ Grid::Grid(double delta){
 	
 	random_device rd;  //Will be used to obtain a seed for the random number engine
 	mt19937 generator(rd()); //Standard mersenne_twister_engine seeded with rd()
-	uniform_real_distribution<> distribution(0.0,delta);
+	uniform_real_distribution<> distribution(0.0,2.0);
 
 	for (int i = 0; i < 2; ++i)
 		this->a.push_back(delta + distribution(generator));
 }
 
-Point * Grid::snap(Curve* c, int pos, int d_vec){
+// Point * Grid::snap(Curve* c, int pos, int d_vec){
+
+// 	vector<double> snap;
+// 	pair<double, double> prev, converted_point;
+// 	for (int i = 0; i < c->get_length(); ++i)
+// 	{
+// 		converted_point = convert_point((*c)[i]); 
+// 		// Ignore consecutive duplicates
+// 		if ( i!=0 && converted_point == prev ){
+// 			// cout << "continue" << endl;
+// 			continue;
+// 		}
+// 		prev = converted_point;
+// 		snap.push_back(converted_point.first);
+// 		snap.push_back(converted_point.second);
+// 	}
+
+// 	// Adjust dimension
+// 	for (int i = snap.size(); i < d_vec; ++i)
+// 	{
+// 		snap.push_back(0);
+// 	}
+
+// 	Point* point = NULL;
+// 	try{
+// 		point = new Point(to_string(pos), &snap);
+// 	}
+// 	catch(bad_alloc&){
+// 		cerr << "snap: No memory available" << endl;
+// 		return NULL;
+// 	}
+
+// 	snap.clear();
+// 	return point;
+// }
+
+vector<double> Grid::snap(Curve* c, double* max){
 
 	vector<double> snap;
 	pair<double, double> prev, converted_point;
@@ -30,24 +66,16 @@ Point * Grid::snap(Curve* c, int pos, int d_vec){
 		prev = converted_point;
 		snap.push_back(converted_point.first);
 		snap.push_back(converted_point.second);
+
+		if ( max != NULL ){
+			if ( converted_point.first > (*max) )
+				(*max) = converted_point.first;
+			if (converted_point.second > (*max))
+				(*max) = converted_point.second;
+		}
 	}
 
-	// Adjust dimension
-	for (int i = snap.size(); i < d_vec; ++i)
-	{
-		snap.push_back(0);
-	}
-
-	Point* point;
-	try{
-		point = new Point(to_string(pos), &snap);
-	}
-	catch(bad_alloc&){
-		cerr << "snap: No memory available" << endl;
-		return NULL;
-	}
-
-	return point;
+	return snap;
 }
 
 pair<double, double> Grid::convert_point(pair<double, double> point){
@@ -84,14 +112,13 @@ double DTW_distance(Curve* x1, Curve* x2){
 	// Fill the first row
 	for (int j = 1; j < m2; ++j)
 	{
- // if (C[0][j] < 0) cout << "first if sids = " << x1->get_id() << "," << x2->get_id() << " ( 0," << j << ") -> " << C[0][j-1] << " + " << eucl_dist((*x1)[0], (*x2)[j]) << endl;
 		C[0][j] = C[0][j-1] + eucl_dist((*x1)[0], (*x2)[j]);
 	}
 
 	// Fill the first column
 	for (int i = 1; i < m1; ++i){
- // if (C[i][0] < 0) cout << "second if ids = " << x1->get_id() << "," << x2->get_id() << " (" << i << ", 0) -> " << C[i-1][0] << " + " << eucl_dist((*x1)[i], (*x2)[0]) << endl;
 		C[i][0] = C[i-1][0] + eucl_dist((*x1)[i], (*x2)[0]);
+
 	}
 
 	// Fill the rest of the matrix
@@ -100,7 +127,6 @@ double DTW_distance(Curve* x1, Curve* x2){
 		for (int j = 1; j < m2; ++j)
 		{
 			C[i][j] = min(C[i-1][j], C[i-1][j-1], C[i][j-1]) + eucl_dist((*x1)[i], (*x2)[j]);
- // if (C[i][j] < 0) cout << "ids = " << x1->get_id() << "," << x2->get_id() << " (" << i << ", " << j << ")" << " -> " << C[i-1][j] << " " <<  C[i-1][j-1] << " " << C[i][j-1] << " " << eucl_dist((*x1)[i], (*x2)[j]) << endl;
 		}
 	}
 
@@ -175,7 +201,7 @@ NN* curves_brute_force(Curve* curve, vector<Curve*>* dataset){
 
 Grid_LSH::Grid_LSH(vector<Curve*>* curves, int L_grid, int k_vec, int max_d, int min_d){
 
-	double delta = 8*min_d/100000.0;
+	double delta = 8*min_d/10000.0;
 
 	// Create curveset
 	for (int i = 0; i < (*curves).size(); ++i)
@@ -185,31 +211,47 @@ Grid_LSH::Grid_LSH(vector<Curve*>* curves, int L_grid, int k_vec, int max_d, int
 	// (*curves).clear();
 
 	// Create Grids and LSHs
-	for (int i = 0; i < L_grid; ++i)
-	{
-cout << "grid " << i << endl;
-		Grids.push_back(new Grid(delta));
-
-		// Convert curves to points
-		Point* point;
-		vector<Point*> pointset;
-		for (int j = 0; j < (this->curveset).size(); ++j)
+	if ( this->curveset.size() > 0 ){
+		for (int i = 0; i < L_grid; ++i)
 		{
-			point = ((this->Grids)[i])->snap((this->curveset)[j], j, max_d);
-			// if ( point == NULL )
-			// {
-			// 	delete_vector<Grid>(&(this->Grids));
-			// 	delete_vector<LSH>(&(this->lsh));
-			// 	delete_vector<Point>(&pointset);
-			// 	delete_vector<Curve>(&(this->curveset));
-			// 	return;
-			// }
-			pointset.push_back(point);
-		}
+	cout << "grid " << i << endl;
+			Grids.push_back(new Grid(delta));
 
-		lsh.push_back(new LSH(&pointset, 1, k_vec, max_d));
-		// lsh[i]->print_points();
-		pointset.clear();
+			// Convert curves to points
+			vector<vector<double>> points;
+			double max_coord= 0;
+			for (int j = 0; j < (this->curveset).size(); ++j)
+			{
+				points.push_back(((this->Grids)[i])->snap((this->curveset)[j], &max_coord));
+
+			}
+			this->snap_num.push_back(max_coord+1);
+
+			// Adjust d of points
+			int cur_d;
+			for (int j = 0; j < points.size(); ++j)
+			{
+				cur_d = points[j].size();
+				for (int k = cur_d; k < max_d; ++k)
+				{
+					points[j].push_back((this->snap_num)[i]);
+				}
+			}
+
+			// Create points
+			vector<Point*> pointset;
+			Point* point;
+			for (int j = 0; j < points.size(); ++j)
+			{
+				point = new Point(to_string(j), &(points[j]));
+				pointset.push_back(point);
+			}
+
+
+			lsh.push_back(new LSH(&pointset, 1, k_vec, max_d));
+			// lsh[i]->print_points();
+			pointset.clear();
+		}
 	}
 }
 
@@ -218,6 +260,7 @@ Grid_LSH::~Grid_LSH(){
 	delete_vector<LSH>(&(this->lsh));
 	delete_vector<Grid>(&(this->Grids));
 	delete_vector<Curve>(&(this->curveset));
+	this->snap_num.clear();
 }
 
 NN* Grid_LSH::predict(Curve* curve, int max_d){
@@ -231,14 +274,29 @@ NN* Grid_LSH::predict(Curve* curve, int max_d){
 
 	for (int i = 0; i < (this->Grids).size(); ++i)
 	{
-		point = ((this->Grids)[i])->snap(curve, 0, max_d);
+
+		// Convert curve to point
+		vector<double> point_coord = ((this->Grids)[i])->snap(curve);
+		int cur_d = point_coord.size();
+		for (int j = cur_d; j < max_d; ++j)
+		{
+			point_coord.push_back((this->snap_num)[i]);
+		}
+
+		Point * point = new Point("0", &point_coord);
+		point_coord.clear();
+
 		if (point == NULL)
 			return NULL;
+		
+		// Find point's nearest neighbor
 		NN* nearest_neighbor = (this->lsh)[i]->predict(point);
 		if (nearest_neighbor == NULL){
 			delete point;
 			continue;
 		}
+
+		// Find the actual distance between this curve and the nn point's curve
 		cur_curve =  (this->curveset)[stoi(nearest_neighbor->get_id())];
 		cur_dist = DTW_distance(curve, cur_curve);
 
@@ -288,11 +346,31 @@ cout << " grid " << i << endl;
 		Grids.push_back(new Grid(delta));
 
 		// Convert curves to points
-		Point* point;
-		vector<Point*> pointset;
+		vector<vector<double>> points;
+		double max_coord = 0;
 		for (int j = 0; j < (this->curveset).size(); ++j)
 		{
-			point = ((this->Grids)[i])->snap((this->curveset)[j], j, max_d);
+			points.push_back(((this->Grids)[i])->snap((this->curveset)[j], &max_coord));
+		}
+		this->snap_num.push_back(max_coord+1);
+
+		// Adjust d of points
+		int cur_d;
+		for (int j = 0; j < points.size(); ++j)
+		{
+			cur_d = points[j].size();
+			for (int k = cur_d; k < max_d; ++k)
+			{
+				points[j].push_back((this->snap_num)[i]);
+			}
+		}
+		
+		// Create points
+		vector<Point*> pointset;
+		Point* point;
+		for (int j = 0; j < points.size(); ++j)
+		{
+			point = new Point(to_string(j), &(points[j]));
 			pointset.push_back(point);
 		}
 
@@ -306,6 +384,7 @@ Grid_Hypercube::~Grid_Hypercube(){
 	delete_vector<Hypercube>(&(this->hypercube));
 	delete_vector<Grid>(&(this->Grids));
 	delete_vector<Curve>(&(this->curveset));
+	this->snap_num.clear();
 }
 
 NN* Grid_Hypercube::predict(Curve* curve, int max_d){
@@ -319,14 +398,28 @@ NN* Grid_Hypercube::predict(Curve* curve, int max_d){
 
 	for (int i = 0; i < (this->Grids).size(); ++i)
 	{
-		point = ((this->Grids)[i])->snap(curve, 0, max_d);
+		// Convert curve to point
+		vector<double> point_coord = ((this->Grids)[i])->snap(curve);
+		int cur_d = point_coord.size();
+		for (int j = cur_d; j < max_d; ++j)
+		{
+			point_coord.push_back((this->snap_num)[i]);
+		}
+
+		Point * point = new Point("0", &point_coord);
+		point_coord.clear();
+
 		if (point == NULL)
 			return NULL;
+		
+		// Find point's nearest neighbor
 		NN* nearest_neighbor = (this->hypercube)[i]->predict(point);
 		if (nearest_neighbor == NULL){
 			delete point;
 			continue;
 		}
+
+		// Find the actual distance between this curve and the nn point's curve
 		cur_curve =  (this->curveset)[stoi(nearest_neighbor->get_id())];
 		cur_dist = DTW_distance(curve, cur_curve);
 

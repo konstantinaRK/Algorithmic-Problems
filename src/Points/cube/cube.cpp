@@ -12,16 +12,17 @@ int main(int argc, char* argv[]){
 	string queries_file = "";
 	string output_file = "";
 
-	// Check arguments
 	if ( !check_arguments_cube(argc, argv, &dataset_file, &queries_file, &k, &M, &probes, &output_file) )
 	{
 		cerr << "Usage ./cube -d <input_file> -q <query_file> -k <int> -M <int> -p <int> -o <output_file>" << endl;
 		return 1;
 	}
 
+	int r = 0;
+
 	// Read the dataset file
 	vector<Point*> pointset;
-	if ( !read(dataset_file, &pointset) ){
+	if ( !read(dataset_file, &pointset, &r) ){
 		delete_vector<Point>(&pointset);
 		return 1;
 	}
@@ -34,13 +35,11 @@ int main(int argc, char* argv[]){
 	}
 
 	// Creating hypercube structure
-	Hypercube* hypercube = NULL;
-	try
-	{
+	Hypercube* hypercube;
+	try{
 		hypercube = new Hypercube(&pointset, pointset[0]->get_dimension(), k, M, probes);
 	}
-	catch(bad_alloc&)
-	{
+	catch(bad_alloc&){
 		delete_vector<Point>(&pointset);
 		return 1;
 	}
@@ -61,14 +60,15 @@ int main(int argc, char* argv[]){
 		if ( !read(queries_file, &queries) )
 		{
 			delete_vector<Point>(&queries);
+			delete hypercube;
 			return 1;
 		}
-
 		cout << "End of reading queries" << endl;
 
 		// Find queries nearest neighbor with brute force and hypercube
 		for (int i = 0; i < queries.size(); ++i)
 		{
+
 			// Brute force
 			auto start = high_resolution_clock::now();
 			NN* true_nearest_neighbor = brute_force(queries[i], &pointset);
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
 			if ( true_nearest_neighbor == NULL )
 			{
 				delete_vector<Point>(&queries);
-				delete_vector<Point>(&pointset);
+				delete hypercube;
 				return 1;
 			}
 
@@ -87,14 +87,14 @@ int main(int argc, char* argv[]){
 
 			// Hypercube neighbor calculation
 			start = high_resolution_clock::now();
-			NN * hypercube_neighbor = hypercube->predict(queries[i]);
+			NN * hypercube_neighbor = hypercube->predict(queries[i], r);
 			stop = high_resolution_clock::now();
 
 			if ( hypercube_neighbor == NULL )
 			{
 				delete true_nearest_neighbor;
 				delete_vector<Point>(&queries);
-				delete_vector<Point>(&pointset);
+				delete hypercube;
 				return 1;
 			}
 
@@ -108,14 +108,14 @@ int main(int argc, char* argv[]){
 			// Statistics calculation
 			double af = (double) hypercube_neighbor->get_distance()/true_nearest_neighbor->get_distance();
 			double time = (double) duration_hypercube.count()/duration_brute_force.count();
+
 			if ( average_af == 0 )
 			{
 				average_af = af;
 				max_af = af;
 				time_af = time;
 			}
-			else
-			{
+			else{
 				if (max_af < af)
 					max_af = af;
 				average_af += af;
@@ -132,41 +132,18 @@ int main(int argc, char* argv[]){
 
 		cout << "max_af is " << max_af << " and average af is " << average_af << " time comp. is : " << time_af << endl;
 
+
 		// Store output in output_file
 		if (!write_output(output_file, output)){
 			delete_vector<Point>(&queries);
-			delete_vector<Point>(&pointset);
+			delete hypercube;
 			return 1;
 		}
 
 		// Check for a new queries file
-		string answer;
-		bool right_answer = false;
-		while ( !right_answer ){
-			cout << "Do you want to search the nearest neighbors in a new query file? y or n" << endl;
-			cin >> answer;
-
-			if ( (answer.compare("y") == 0) || (answer.compare("yes") == 0) ){
-				right_answer = true;
-				cout << "Insert the name of the queries file" << endl;
-				cin >> queries_file;
-
-				cout << "Insert the name of the output_file" << endl;
-				cin >> output_file;
-			}
-			else if ( (answer.compare("n") == 0) || (answer.compare("no") == 0) ){
-				right_answer = true;
-				stop = true;
-			}
-			else{
-				right_answer = false;
-				cout << "Invalid answer try again" << endl;
-			}
-		}
+		stop = !check_for_new_queries(&queries_file, &output_file);
 		delete_vector<Point>(&queries);
 	}
 
-	delete_vector<Point>(&pointset);
-
-	return 0;
+	delete hypercube;
 }

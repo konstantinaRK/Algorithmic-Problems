@@ -16,7 +16,7 @@ class H{
 	public:
 		H(int dimension, int m, double w, int M);
 		inline ~H() { this->s.clear(); }
-		int operator[](Point* point);
+		int operator[](Point* point);	// Returns the h value of the point
 };
 
 class G{
@@ -24,7 +24,7 @@ class G{
 	public:
 		G(int k, int dimension, int m, double w);
 		~G();
-		unsigned int operator[](Point* point);
+		unsigned int operator[](Point* point);	// Returns the g value of the point
 };
 
 class LSH{
@@ -37,16 +37,6 @@ class LSH{
 		LSH(vector<Point*>* points, int L, int k, int dimension);
 		~LSH();
 		NN* predict(Point * point, int r = 0);
-		void print_points(){
-			for (int i = 0; i < this->pointset.size(); ++i)
-			{
-				for (int j = 0; j < pointset[i]->get_dimension(); ++j)
-				{
-					cout << (*pointset[i])[j] << " ";
-				}
-				cout << endl << endl;
-			}
-		}
 };
 
 #endif

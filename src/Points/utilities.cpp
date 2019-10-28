@@ -10,6 +10,10 @@ Point::Point(string id, vector<double>* X){
 	}
 }
 
+Point::~Point(){
+	this->X.clear();
+}
+
 int Point::get_dimension(void){
 	return this->X.size();
 }
@@ -30,6 +34,10 @@ NN::NN(string id, double distance, set<string>* neighbors){
 		(this->r_near_neighbors).insert((this->r_near_neighbors).end(), (*neighbors).begin(), (*neighbors).end());
 		(*neighbors).clear();
 	}
+}
+
+NN::~NN(){
+	this->r_near_neighbors.clear();
 }
 
 string NN::get_near_neighbor(int i){
@@ -61,9 +69,9 @@ NN* brute_force(Point* point, vector<Point*>* pointset){
 	int min_distance;
 
 	int current_distance;
-	for (int i = 0; i < (*pointset).size(); ++i)
+	for (int i = 0; i < (*pointset).size(); ++i)	// For every point
 	{
-		if ( (point->get_id()).compare((*pointset)[i]->get_id()) != 0 )
+		if ( (point->get_id()).compare((*pointset)[i]->get_id()) != 0 )	// If the point has different id from query point
 		{
 			// Calculate the distance
 			current_distance = manhattan_dist(point, (*pointset)[i]);
@@ -125,44 +133,16 @@ double average_distance(vector<Point*>* pointset){
 
 	int sum_d = 0;
 	NN * nearest_neighbor;
-	for (int i = 0; i < size; i+=step)
+	for (int i = 0; i < size; i+=step)	// For points in pointset
 	{
+		// Find nearest neighbor
 		nearest_neighbor = brute_force((*pointset)[i], &(*pointset));
 		sum_d += nearest_neighbor->get_distance();
 		delete nearest_neighbor;
 	}
 
+	// Return the average nearest neighbor distance
 	return sum_d/(size/step);
-}
-
-void print_points(vector<Point*> points){
-
-	for (int i = 0; i < points.size(); ++i)
-	{
-		cout << points[i]->get_id() << "\t";
-		for (int j = 0; j < points[i]->get_dimension(); ++j)
-		{
-			cout << (*points[i])[j];
-			if ( j != points[i]->get_dimension()-1)
-				cout << "\t";
-		}
-		cout << endl;
-	}
-} 
-
-void print_hash_tables(vector<unordered_map<unsigned int, vector<Point*>>>* hash_tables){
-
-	int num_of_hash_tables;
-   for (auto hash_table : ((*hash_tables)[0])) 
-   {
-      	// cout << hash_table.first << endl;
-      	num_of_hash_tables ++;
-      	vector<Point*> points = hash_table.second;
-      	// print_points(points);
-      	// cout << endl << endl;
-	}
-
-	cout << "num_of_hash_tables " << num_of_hash_tables << endl;
 }
 
 bool check_for_new_queries(string* queries_file, string* output_file){

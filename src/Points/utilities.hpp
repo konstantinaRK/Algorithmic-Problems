@@ -20,6 +20,7 @@ class Point{
 		vector<double> X;
 	public:
 		Point(string id, vector<double>* X);
+		~Point();
 		inline string get_id(void) { return this->id; }
 		int get_dimension(void);
 		double operator[](int i);
@@ -31,6 +32,7 @@ class NN {
 		vector<string> r_near_neighbors;
 	public:
 		NN(string id, double distance, set<string>* neighbors=NULL);
+		~NN();
 		inline string get_id(void){ return this->id; } 
 		inline double get_distance(void){ return this->distance; }
 		unsigned int r_near_neighbors_size();
@@ -48,13 +50,9 @@ void delete_vector(vector<C*>* v){
 	(*v).clear();
 }
 
-double manhattan_dist(Point* x, Point* y);
 NN* brute_force(Point* point, vector<Point*>* pointset);
+double manhattan_dist(Point* x, Point* y);
 double average_distance(vector<Point*>* pointset);
-
-
-void print_points(vector<Point*> points);
-void print_hash_tables(vector<unordered_map<unsigned int, vector<Point*>>>* hash_tables);
 
 bool check_for_new_queries(string* queries_file, string* output_file);
 

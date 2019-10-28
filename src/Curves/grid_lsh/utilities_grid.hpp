@@ -12,12 +12,13 @@ class Grid{
 		pair<double, double> convert_point(pair<double, double>);
 	public:
 		Grid(double delta);	
-		Point* snap(Curve* c, int pos, int d_vec);
+		vector<double> snap(Curve* c, double* max = NULL);
 };
 
 class Grid_LSH{
 		vector<Curve*> curveset; 
 		vector<Grid*> Grids;
+		vector<double> snap_num;
 		vector<LSH*> lsh;
 	public:
 		Grid_LSH(vector<Curve*>* curves, int L_grid, int k_vec, int max_d, int min_d);
@@ -29,6 +30,7 @@ class Grid_Hypercube{
 
 		vector<Curve*> curveset;
 		vector<Grid*> Grids;
+		vector<double> snap_num;
 		vector<Hypercube*> hypercube;
 	public:
 		Grid_Hypercube(vector<Curve*>* curves, unsigned int k_hypercube, unsigned int M, unsigned int probes, int L_grid, int max_d, int min_d);

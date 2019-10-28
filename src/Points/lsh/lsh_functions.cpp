@@ -5,9 +5,8 @@ using namespace std;
 H::H(int dimension, int m, double w, int M){
 
 	// Create s
-
-	random_device rd;  //Will be used to obtain a seed for the random number engine
-	mt19937 generator(rd()); //Standard mersenne_twister_engine seeded with rd()
+	random_device rd;
+	mt19937 generator(rd());
 	uniform_real_distribution<> distribution(0.0,w/1.0);
 
 	for (int i = 0; i < dimension; ++i)
@@ -20,6 +19,7 @@ H::H(int dimension, int m, double w, int M){
 	this->M = M;
 }
 
+// Returns the h value of the point
 int H::operator[](Point* point){
 
 	int sum = 0;
@@ -29,7 +29,6 @@ int H::operator[](Point* point){
 	{
 		a = modulo((floor(((*point)[i] - this->s[i])/(this->w)))*(modPow(this->m, d-i-1, this->M)), this->M);
 		sum += a;
-// cout << (floor(((*point)[i] - this->s[i])/(this->w))) << " ";
 	}
 	return modulo(sum, this->M);
 }
@@ -66,33 +65,29 @@ G::G(int k,int dimension, int m, double w){
 			{
 				delete this->h[j];
 			}
-			throw;
 		}
 	}
 }
 
 G::~G(){
 
-	for (int i = 0; i < this->h.size(); ++i)
-	{
-		delete this->h[i];
-	}
-
+	delete_vector<H>(&(this->h));
 	this->h.clear();
 }
 
+// Returns the g value of the point
 unsigned int G::operator[](Point* point){
 
 	unsigned int g = 0;
 	int k = this->h.size();
 	int shift = floor(32/k);
+
+	// Concatenate h values
 	for (int i = 0; i < k; ++i)
 	{
 		g = g << shift;
 		g = g | (*(this->h[i]))[point];
-// cout << "h is " << (*(this->h[i]))[point] << endl;
 	}
-// cout << "g is " << g << endl;
 	return g;
 }
 
@@ -104,7 +99,6 @@ LSH::LSH(vector<Point*>* points, int L, int k, int dimension){
 	{
 		this->pointset.push_back((*points)[i]);
 	}
-	// (*points).clear();
 
 	double w = 4*average_distance(&(this->pointset)) + 7;
 	int m = 3;
@@ -112,15 +106,6 @@ LSH::LSH(vector<Point*>* points, int L, int k, int dimension){
 	// Create the g functions and the hash tables
 	for (int i = 0; i < L; ++i)
 	{
-		// try{
-		// 	this->g.push_back(new G(k, dimension, m, w));
-		// }
-		// catch(bad_alloc&){
-		// 	delete_vector<G>(&(this->g));
-		// 	delete_vector<Point>(&(this->pointset));
-		// 	cerr << "LSH : No memory available" << endl;
-		// 	return;
-		// }
 		this->g.push_back(new G(k, dimension, m, w));
 		unordered_map<unsigned int, vector<Point*>> hash_table;
 		this->hash_tables.push_back(hash_table);
@@ -132,34 +117,47 @@ LSH::LSH(vector<Point*>* points, int L, int k, int dimension){
 
 LSH::~LSH(){
 
-	delete_vector<Point>(&pointset);
-	delete_vector<G>(&g);
+	delete_vector<Point>(&(this->pointset));
+	this->pointset.clear();
+	delete_vector<G>(&(this->g));
+	this->g.clear();
+	for (int i = 0; i < this->hash_tables.size(); ++i)
+	{
+		unordered_map<unsigned int, vector<Point*>>:: iterator itr; 
+	    for (itr = this->hash_tables[i].begin(); itr != this->hash_tables[i].end(); itr++) 
+    	{ 
+	        itr->second.clear(); 
+    	}
+	}
+	this->hash_tables.clear();
 }
 
 void LSH::train(){
 
 	int L = (this->g).size();
+
 	// Fill the hash tables with the pointset
 	unsigned int key = 0;
-	for (int j = 0; j < this->pointset.size(); ++j)
+	for (int j = 0; j < this->pointset.size(); ++j)	// For every point
 	{
-		for (int i = 0; i < L; ++i)
+		for (int i = 0; i < L; ++i)	// For every g
 		{
-			key = (*(this->g[i]))[(this->pointset)[j]];
-			if ( this->hash_tables[i].find(key) == this->hash_tables[i].end() )
+			key = (*((this->g)[i]))[(this->pointset)[j]];
+			if ( this->hash_tables[i].find(key) == this->hash_tables[i].end() )	// If the key does not exist
 			{
 				// Insert the key
 				vector<Point*> p;
 				p.push_back(this->pointset[j]);
 				this->hash_tables[i].insert(make_pair(key, p));
 			}
-			else
+			else	// If the key exists
 				this->hash_tables[i].at(key).push_back(this->pointset[j]);
 		}		
 	}
 
 }
 
+// Find nearest neighbor
 NN* LSH::predict(Point* point, int r){
 
 	int min_distance, distance;
@@ -168,29 +166,35 @@ NN* LSH::predict(Point* point, int r){
 
 	int L  = (this->g).size();
 
-	for (int i = 0; i < L; ++i)
+	for (int i = 0; i < L; ++i) // For every g
 	{
-		unsigned int key = (*(this->g[i]))[point];
-		// If the key exists
-		if ( (this->hash_tables)[i].find(key) != (this->hash_tables)[i].end() )
+		unsigned int key = (*(this->g[i]))[point];	// Find g value of the point
+
+		if ( (this->hash_tables)[i].find(key) != (this->hash_tables)[i].end() ) // If the key exists
 		{
 			vector<Point*> buckets_points = (this->hash_tables)[i].at(key);
 			Point* p;
 
 			int size = buckets_points.size();
+			
 			int step = 1;
-			if ( r != 0 )
-				size/500 + 1;
 
-			for (int j = 0; j < size; j+=step)
+			if ( r != 0 ){
+				// Increase step according to bucket size
+				size/500 + 1;
+			}
+
+			for (int j = 0; j < size; j+=step)	// For every point in the bucket
 			{	
 				p = buckets_points[j];
-				distance = manhattan_dist(p, point);
-				if ( distance <= r )
+				distance = manhattan_dist(p, point);	// Calc the distance between the 2 points
+				
+				// Update near neighbors
+				if ( distance < r )
 					near_neighbors.insert(p->get_id());
 
-				// If this is the first point
-				if ( min_id == "" )
+				// Update nearest neighbor
+				if ( min_id == "" )	// If this is the first point
 				{
 					min_id = p->get_id();
 					min_distance = distance;

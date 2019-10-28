@@ -22,9 +22,17 @@ bool check_arguments_lsh(int argc, char* argv[], string * input_file, string * q
 				break;
 			case 'k':
 				(*k) = atoi(optarg);
+				if ( (*k) == 0 ){
+					cerr << "Wrong value of k" << endl;
+					return false;
+				}
 				break;
 			case 'L':
 				(*L) = atoi(optarg);
+				if ( (*L) == 0 ){
+					cerr << "Wrong value of L" << endl;
+					return false;
+				}
 				break;
 			case 'o':
 				neccessary_arg = true;
@@ -41,14 +49,14 @@ bool check_arguments_lsh(int argc, char* argv[], string * input_file, string * q
 		return false;
 	}
 
-	// If input file was not in command line
+	// If input file is not given from the command line
 	if ( (*input_file).compare("") == 0 )
 	{
 		cout << "Please give the name of the input file" << endl;
 		cin >> (*input_file);
 	}
 
-	// If queries file is not given in command line
+	// If queries file is not given from the command line
 	if ( (*queries_file).compare("") == 0 )
 	{
 		cout << "Please give the name of the queries file" << endl;
@@ -79,12 +87,24 @@ bool check_arguments_cube(int argc, char* argv[], string * input_file, string * 
 				break;
 			case 'k':
 				(*k) = atoi(optarg);
+				if ( (*k) == 0 ){
+					cerr << "Wrong value of k" << endl;
+					return false;
+				}
 				break;
 			case 'M':
 				(*M) = atoi(optarg);
+				if ( (*M) == 0 ){
+					cerr << "Wrong value of M" << endl;
+					return false;
+				}
 				break;
 			case 'p':
 				(*probes) = atoi(optarg);
+				if ( (*probes) == 0 ){
+					cerr << "Wrong value of probes" << endl;
+					return false;
+				}
 				break;
 			case 'o':
 				neccessary_arg = true;
@@ -98,14 +118,14 @@ bool check_arguments_cube(int argc, char* argv[], string * input_file, string * 
 	if ( opt == '?' || neccessary_arg == false )
 		return false;
 
-	// If input file was not in command line
+	// If input file is not given from the command line
 	if ( (*input_file).compare("") == 0 )
 	{
 		cout << "Please give the name of the input file" << endl;
 		cin >> (*input_file);
 	}
 
-	// If queries file is not given in command line
+	// If queries file is not given from the command line
 	if ( (*queries_file).compare("") == 0 )
 	{
 		cout << "Please give the name of the queries file" << endl;
@@ -115,6 +135,7 @@ bool check_arguments_cube(int argc, char* argv[], string * input_file, string * 
 	return true;
 }
 
+// Read points from a file
 bool read(string file_name, vector<Point*>* points, int* r){
 
 	string line;
@@ -126,7 +147,7 @@ bool read(string file_name, vector<Point*>* points, int* r){
   	if (myfile.is_open())
   	{
   		getline(myfile, line);
-  		// If i am looking for range
+  		// If this file can contain range
   		if ( r!=NULL )
   			if (find_range(line, r)){	// If there is a range
   				// Read a new line
@@ -172,7 +193,7 @@ bool find_range(string line, int* r){
 	}
 
 }
-
+// Transform data to Point structure
 bool point_proccessing(vector<Point*>* points, string p, int d){
 
 	stringstream L;
@@ -182,14 +203,17 @@ bool point_proccessing(vector<Point*>* points, string p, int d){
 	if ( !getline(L, coordinate, ' ') )
 		return false;
 
-	// Get the id and deside the type
+	// Get the id
 	string id = coordinate;
+
+	// Get the coordinates
 	vector<double> X;
 	while( getline(L, coordinate, ' ') ){
 		if ( coordinate.compare("\r") == 0 ) break;
 		X.push_back( stod(coordinate) );
 	}
 
+	// If this is not the first point and the dimension is different in this point
 	if ( d != -1 && X.size() != d ){
 		cerr << "Wrong input file" << endl;
 		return false;
