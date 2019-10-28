@@ -1,7 +1,6 @@
-#include "./DataHandling.hpp"
-#include "../grid_lsh/utilities_grid.hpp"
-
-#include "../../../Points/DataHandling.hpp" // for write_output
+#include "../../../../include/utilities.hpp"
+#include "../../../../include/DataHandling.hpp"
+#include "../../../../include/Grid.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -12,7 +11,12 @@ int main(int argc, char * argv[]){
 	unsigned int k_hypercube, L_grid, M, probes;
 	int max_d, min_d;
 
-	vector <Curve*> dataset = file_handling(argc, argv, &queries_file, &output_file, &k_hypercube, &M, &probes, &L_grid, &max_d, &min_d);
+	vector <Curve*> dataset = file_handling_grid_hypercube(argc, argv, &queries_file, &output_file, &k_hypercube, &M, &probes, &L_grid, &max_d, &min_d);
+	if (dataset.empty())
+	{
+		cerr << "Could not find data!" << endl;
+		return -1;
+	}
 
 	cout << "End of reading" << endl;
 
@@ -38,7 +42,13 @@ int main(int argc, char * argv[]){
 		string output = "";
 
 		// Read queries file
-		vector<Curve*> queries = struct_initialization(queries_file);
+		vector<Curve*> queries = struct_initialization_grid(queries_file);
+		if (queries.empty())
+		{
+			cerr << "Could not find queries!" << endl;
+			stop = true;
+			break;
+		}
 		cout << "End of reading queries" << endl;
 
 		// Find nearest neighbors of queries

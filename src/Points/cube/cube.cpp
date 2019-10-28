@@ -1,5 +1,5 @@
-#include "./hypercube_functions.hpp"
-#include "../DataHandling.hpp"
+#include "../../../include/Hypercube_Structure.hpp"
+#include "../../../include/DataHandling.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -93,9 +93,7 @@ int main(int argc, char* argv[]){
 			if ( hypercube_neighbor == NULL )
 			{
 				delete true_nearest_neighbor;
-				delete_vector<Point>(&queries);
-				delete hypercube;
-				return 1;
+				continue;
 			}
 
 			auto duration_hypercube = duration_cast<microseconds>(stop - start); 

@@ -1,5 +1,5 @@
-#include "./lsh_functions.hpp"
-#include "../DataHandling.hpp"
+#include "../../../include/LSH_Structure.hpp"
+#include "../../../include/DataHandling.hpp"
 
 using namespace std;
 using namespace std::chrono;

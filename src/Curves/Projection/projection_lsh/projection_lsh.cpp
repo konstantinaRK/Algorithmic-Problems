@@ -1,10 +1,9 @@
-#include "DataHandling.hpp"
-#include "../Projection.hpp"
+#include "../../../../include/Projection.hpp"
+#include "../../../../include/DataHandling.hpp"
 
 #include <unistd.h>
 #include <stdio.h>
 #include <limits.h>
-#include "../../grid_lsh/utilities_grid.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -16,7 +15,7 @@ int main(int argc, char * argv[]){
 	double e;
 
 	// Read dataset
-	vector <Curve*> dataset = file_handling(argc, argv, &query_file, &output_file, &K, &L, &e, &M);
+	vector <Curve*> dataset = file_handling_projection_lsh(argc, argv, &query_file, &output_file, &K, &L, &e, &M);
 	if (dataset.empty())
 	{
 		cerr << "Could not find data!" << endl;
@@ -56,7 +55,7 @@ int main(int argc, char * argv[]){
 	{
 		string output = "";
 		// Read the queries file
-		vector<Curve*> queries = struct_initialization(query_file);
+		vector<Curve*> queries = struct_initialization_projection(query_file);
 		if (queries.empty())
 		{
 			cerr << "Could not find queries!" << endl;
