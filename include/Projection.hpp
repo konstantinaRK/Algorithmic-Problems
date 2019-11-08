@@ -19,7 +19,7 @@ class Traversal
 		void curve_snap(vector <pair<double, double>>* curve_points, double ** G, unsigned int Gd_dim, unsigned int Gk_dim, vector <double>* new_vector);
 		virtual void train(unsigned int curve_size, vector <Curve*> dataset, int L, int k, double ** G, unsigned int Gd_dim, unsigned int Gk_dim) {};
 		virtual void train(unsigned int curve_size, vector <Curve*> dataset, unsigned int M_hyper, unsigned int k, unsigned int probes, double ** G, unsigned int Gd_dim, unsigned int Gk_dim){};
-		virtual NN * predict(Curve * query, double ** G, unsigned int Gd_dim, unsigned int Gk_dim) { cout << " giati me gamas?" << endl;};
+		virtual NN * predict(Curve * query, double ** G, unsigned int Gd_dim, unsigned int Gk_dim) {};
 };
 
 class Traversal_LSH: public Traversal
